@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  user
+  admin
+  supperadmin
+}
+
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive    Boolean  @default(true) @db.Bool
+  username    String
+  phoneNumber String
+  email       String
+  password    String
+  profile     String   @default("")
+  kyc         Boolean  @default(false)
+  role        UserType @default(user)
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt
+
+  @@index([username])
+  @@index([phoneNumber])
+  @@index([email])
+}
+
+model Kyc {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Order {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Banner {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Promotion {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true)
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Payment {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Review {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Service {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Status {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Category {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Wallet {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Notification {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean  @default(true) @db.Bool
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
