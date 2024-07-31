@@ -8,6 +8,7 @@ export const EMessage = {
     updateFailed: "Failed to update record",
     deleteFailed: "Failed to delete record",
   
+    
     insertSuccess: "Record inserted successfully",
     updateSuccess: "Record updated successfully",
     deleteSuccess: "Record deleted successfully",
