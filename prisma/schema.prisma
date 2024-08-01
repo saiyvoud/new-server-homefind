@@ -20,17 +20,18 @@ enum UserType {
 }
 
 model User {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive    Boolean  @default(true) @db.Bool
-  username    String
-  phoneNumber String
-  email       String
-  password    String
-  profile     String   @default("")
-  kyc         Boolean  @default(false)
-  role        UserType @default(user)
-  createAt    DateTime @default(now())
-  updateAt    DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive     Boolean  @default(true) @db.Bool
+  username     String
+  phoneNumber  String
+  email        String
+  password     String
+  profile      String   @default("")
+  kyc          Boolean  @default(false)
+  role         UserType @default(user)
+  loginversion Int      @default(1)
+  createAt     DateTime @default(now())
+  updateAt     DateTime @updatedAt
 
   @@index([username])
   @@index([phoneNumber])
