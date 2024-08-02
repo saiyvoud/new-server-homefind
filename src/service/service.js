@@ -1,7 +1,7 @@
 import CryptoJS from "crypto-js";
 import { SECRET_KEY } from "../config/api.config.js";
 import jwt from "jsonwebtoken";
-import { prisma } from "../util/prisma.js";
+import prisma from "../util/Prisma.js";
 import { generateJWTtoken } from "../config/GenerateToken.js";
 
 export const SendSuccess = (res, message, data) => {
@@ -49,8 +49,6 @@ export const Endcrypt = (data) => {
 };
 export const VerifyToken = (token) => {
   return new Promise((resolve, reject) => {
-    console.log("Verifying token:", token);
-
     jwt.verify(token, SECRET_KEY, async (err, decoded) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
@@ -64,15 +62,20 @@ export const VerifyToken = (token) => {
 
       try {
         const id = await Decrypt(decoded.id);
-        console.log("Decrypted ID:", id);  // Add this for debugging
 
         if (!id) {
           console.error("Decryption Error: Decrypted ID is empty or invalid");
-          return reject(new Error("Error verifying authorization: Decrypted ID is empty or invalid"));
+          return reject(
+            new Error(
+              "Error verifying authorization: Decrypted ID is empty or invalid"
+            )
+          );
         }
+        let decryptedPass = id.toString(CryptoJS.enc.Utf8);
+        decryptedPass = decryptedPass.replace(/"/g, "");
 
         const user = await prisma.user.findUnique({
-          where: { id },
+          where: { id: decryptedPass, isActive: true },
         });
 
         if (!user) {
@@ -83,12 +86,13 @@ export const VerifyToken = (token) => {
         return resolve(user.id);
       } catch (error) {
         console.error("Decryption or Database Error:", error.message);
-        return reject(new Error("Error decrypting token or fetching user data"));
+        return reject(
+          new Error("Error decrypting token or fetching user data")
+        );
       }
     });
   });
 };
-
 
 export const VerifyRefreshToken = (data) => {
   return new Promise((resolve, reject) => {
@@ -101,8 +105,11 @@ export const VerifyRefreshToken = (data) => {
         if (!id) {
           return reject("Error RefreshToken");
         }
+        let decryptedPass = id.toString(CryptoJS.enc.Utf8);
+        decryptedPass = decryptedPass.replace(/"/g, "");
+
         const user = await prisma.user.findUnique({
-          where: { id },
+          where: { id: decryptedPass },
         });
         if (!user) return reject("Error Verify Authorization");
         const update = await prisma.user.update({
@@ -120,6 +127,7 @@ export const VerifyRefreshToken = (data) => {
         resolve(token);
       } catch (error) {
         console.error("General Error:", error);
+
         return reject(error);
       }
     });

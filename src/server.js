@@ -2,8 +2,22 @@ import express from "express";
 import morgan from "morgan";
 import fileUpload from "express-fileupload";
 import { EAPI, SERVER_PORT } from "./config/api.config.js";
-import { prisma } from "./util/prisma.js";
+import prisma from "./util/Prisma.js";
 import APIRouter from "./router/index.router.js";
+import redis from "./Database/radis.js";
+
+// Redis event listeners
+redis.on("connect", () => {
+  console.log("Connected to Redis");
+});
+
+redis.on("error", (err) => {
+  console.error("Redis error:", err);
+});
+
+redis.on("reconnecting", () => {
+  console.log("Reconnecting to Redis...");
+});
 
 const app = express();
 
@@ -13,7 +27,7 @@ app.use(
   express.urlencoded({ extended: false, limit: "500mb", parameterLimit: 500 })
 );
 app.use(fileUpload());
-app.use(morgan("common"));
+app.use(morgan("dev"));
 
 // CORS Headers
 app.all("/*", (req, res, next) => {
@@ -25,6 +39,8 @@ app.all("/*", (req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   next();
 });
+
+// API Router
 app.use(EAPI, APIRouter);
 
 // Check Database Connection
@@ -37,6 +53,10 @@ const checkDatabaseConnection = async () => {
   }
 };
 
+// await redis.del("users");
+
+// const user = await redis.get("users");
+// console.log('user :>> ', user);
 // Start Server
 app.listen(SERVER_PORT, () => {
   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);

@@ -1,16 +1,17 @@
 import jwt from "jsonwebtoken";
-import { SendError } from "../service/service.js";
+import { SendError, VerifyToken } from "../service/service.js";
 import { EMessage } from "../service/enum.js";
-import { prisma } from "../util/prisma.js";
+import prisma from "../util/Prisma.js";
 
+import CryptoJS from "crypto-js";
 export const auth = async (req, res, next) => {
   try {
     const authorization = req.headers["authorization"];
-    if (!authorization) SendError(res, 401, EMessage.invalidToken);
+    if (!authorization) return SendError(res, 401, EMessage.invalidToken);
 
-    const token = authorization.split("Bearer", " ").trim();
-    if (!token) SendError(res, 401, EMessage.tokenNotFound);
-    const decode = await verifyToken(token);
+    const token = authorization.replace("Bearer ", "").trim();
+    if (!token) return SendError(res, 401, EMessage.notFound + " Token");
+    const decode = await VerifyToken(token);
 
     req.user = decode;
     next();
@@ -23,8 +24,9 @@ export const auth = async (req, res, next) => {
 };
 export const admin = async (req, res, next) => {
   try {
-    const id = req.user.id;
-    if (!id) SendError(res, 401, "You are not allowed id");
+    const id = req.user;
+
+    if (!id) return SendError(res, 401, "You are not allowed id");
     const user = await prisma.user.findUnique({
       where: {
         id: id,
@@ -33,7 +35,8 @@ export const admin = async (req, res, next) => {
       },
     });
 
-    if (!user) SendError(res, 404, "You are not allowed ");
+    if (!user) return SendError(res, 401, "You are not allowed ");
+    next();
   } catch (err) {
     return SendError(res, 401, EMessage.serverError, err.message);
   }

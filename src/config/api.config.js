@@ -15,6 +15,7 @@ const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
 export {
+  KLimit,
   EAPI,
   SERVER_PORT,
   SECRET_KEY,

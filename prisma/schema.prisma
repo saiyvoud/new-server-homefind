@@ -53,15 +53,20 @@ model Order {
 }
 
 model Banner {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive  Boolean  @default(true) @db.Bool
+  image     String
+  link_url  String
+  isPublice Boolean  @default(true) @db.Bool
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
 }
 
 model Promotion {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   isActive Boolean  @default(true)
+  qty      Int
+  code     String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
@@ -90,6 +95,7 @@ model Service {
 model Status {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   isActive Boolean  @default(true) @db.Bool
+  name     String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
@@ -97,6 +103,8 @@ model Status {
 model Category {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   isActive Boolean  @default(true) @db.Bool
+  title    String
+  icon     String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
