@@ -32,6 +32,7 @@ model User {
   loginversion Int      @default(1)
   createAt     DateTime @default(now())
   updateAt     DateTime @updatedAt
+  Kyc          Kyc[]
 
   @@index([username])
   @@index([phoneNumber])
@@ -39,10 +40,22 @@ model User {
 }
 
 model Kyc {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive  Boolean  @default(true) @db.Bool
+  userId    String   @db.ObjectId
+  firstname String
+  lastname  String
+  age       Int
+  village   String
+  district  String
+  province  String
+  docType   String
+  docNo     String
+  docImage  String[]
+  profile   String   @default("")
+  user      User     @relation(fields: [userId], references: [id])
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
 }
 
 model Order {

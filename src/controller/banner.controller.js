@@ -8,21 +8,23 @@ import {
   SendSuccess,
 } from "../service/service.js";
 import { UploadImage } from "../service/uploadImage.js";
-import { DataExist } from "../service/validate.js";
+import { DataExist, ValidateBanner } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
 let cacheKey = "banners";
 const BannerController = {
   async Insert(req, res) {
     try {
+      const validate = ValidateBanner(req.body);
       const { link_url } = req.body;
       const data = req.files;
 
-      if (!link_url)
+      if (validate.length > 0) {
         return SendError(
           res,
           400,
-          `${EMessage.pleaseInput}: link_url is required`
+          `${EMessage.pleaseInput}: ${validate.join(", ")}`
         );
+      }
       if (!data)
         return SendError(
           res,
@@ -54,7 +56,7 @@ const BannerController = {
         banners.unshift(banner);
         await redis.set(cacheKey, JSON.stringify(banners), "EX", 3600);
       }
-       await redis.del( "banners-isPublice");
+      await redis.del("banners-isPublice");
 
       return SendCreate(res, `${EMessage.insertSuccess}`, banner);
     } catch (error) {
@@ -77,8 +79,7 @@ const BannerController = {
         },
         data,
       });
-      let cacheKeyID = cacheKey + "_" + id;
-      await redis.del(cacheKey, cacheKeyID, "banners-isPublice");
+      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
 
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
@@ -102,8 +103,7 @@ const BannerController = {
         where: { id },
         data: { isPublice: status },
       });
-      let cacheKeyID = cacheKey + "_" + id;
-      await redis.del(cacheKey, cacheKeyID);
+      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} banner`, error);
@@ -140,8 +140,8 @@ const BannerController = {
         where: { id },
         data: { image: img_url },
       });
-      let cacheKeyID = cacheKey + "_" + id;
-      await redis.del(cacheKey, cacheKeyID, "banners-isPublice");
+
+      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
 
       return SendSuccess(res, `${EMessage.updateSuccess} image banner`, banner);
     } catch (error) {
@@ -166,8 +166,7 @@ const BannerController = {
         data: { isActive: false },
       });
       // delete cached redis  banners and banners_id
-      let cacheKeyID = cacheKey + "_" + id;
-      await redis.del(cacheKey, cacheKeyID, "banners-isPublice");
+      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
 
       return SendSuccess(res, `${EMessage.deleteSuccess} banner`, banner);
     } catch (error) {
@@ -187,7 +186,6 @@ const BannerController = {
           orderBy: { createAt: "desc" },
         });
         await redis.set(cacheKey, JSON.stringify(bannerData), "EX", 3600);
-        console.log("object :>> ", JSON.parse(cachedData));
       } else {
         bannerData = JSON.parse(cachedData);
       }
@@ -201,7 +199,7 @@ const BannerController = {
   async SelOne(req, res) {
     try {
       const id = req.params.id;
-      let cacheKeyID = cacheKey + "_" + id;
+      let cacheKeyID = cacheKey + id;
       const cachedData = await redis.get(cacheKeyID);
       let banner;
       if (!cachedData) {

@@ -1,95 +1,84 @@
 import prisma from "../util/Prisma.js";
 
-export const ExistingUser = ({ username, phoneNumber, email }) => {
+// Generic function to find a single record
+const findOne = (model, where) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const user = await prisma.user.findFirst({
-        where: {
-          isActive: true,
-          OR: [{ username }, { phoneNumber }, { email }],
-        },
-      });
-
-      resolve(user);
+      const result = await prisma[model].findUnique({ where });
+      resolve(result);
     } catch (error) {
       reject(error);
     }
+  });
+};
+
+// Generic function to find the first matching record
+const findFirst = (model, where) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const result = await prisma[model].findFirst({ where });
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const ExistingUser = ({ username, phoneNumber, email }) => {
+  return findFirst("user", {
+    isActive: true,
+    OR: [{ username }, { phoneNumber }, { email }],
   });
 };
 
 export const FindUserById = (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id, isActive: true },
-      });
-      resolve(user);
-    } catch (err) {
-      reject(err);
-    }
-  });
+  return findOne("user", { id, isActive: true });
 };
 
 export const FindUserByPhoneNumber = (phoneNumber) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const user = await prisma.user.findFirst({
-        where: { phoneNumber, isActive: true },
-      });
-      resolve(user);
-    } catch (err) {
-      reject(err);
-    }
-  });
+  return findFirst("user", { phoneNumber, isActive: true });
 };
 
 export const FindBannerById = (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const banner = await prisma.banner.findUnique({
-        where: { id, isActive: true },
-      });
-      resolve(banner);
-    } catch (err) {
-      reject(err);
-    }
-  });
+  return findOne("banner", { id, isActive: true });
 };
 
 export const FindPromotion = (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const promotion = await prisma.promotion.findUnique({
-        where: { id, isActive: true },
-      });
-      resolve(promotion);
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return findOne("promotion", { id, isActive: true });
 };
+
 export const FindStatusById = (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const promotion = await prisma.status.findUnique({
-        where: { id, isActive: true },
-      });
-      resolve(promotion);
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return findOne("status", { id, isActive: true });
 };
 
 export const FindCategoryById = (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const promotion = await prisma.category.findUnique({
-        where: { id, isActive: true },
-      });
-      resolve(promotion);
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return findOne("category", { id, isActive: true });
+};
+
+export const FindKYCById = (id) => {
+  return findOne("kyc", { id, isActive: true });
+};
+
+export const FindOrderById = (id) => {
+  return findOne("order", { id, isActive: true });
+};
+
+export const FindPaymentById = (id) => {
+  return findOne("payment", { id, isActive: true });
+};
+
+export const FindReviewById = (id) => {
+  return findOne("review", { id, isActive: true });
+};
+
+export const FindServieById = (id) => {
+  return findOne("service", { id, isActive: true });
+};
+
+export const FindWalletById = (id) => {
+  return findOne("wallet", { id, isActive: true });
+};
+
+export const FindNotificationById = (id) => {
+  return findOne("notification", { id, isActive: true });
 };

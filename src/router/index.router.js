@@ -2,7 +2,7 @@ import express from "express";
 import userController from "../controller/user.controller.js";
 import BannerController from "../controller/banner.controller.js";
 import { admin, auth } from "../middleware/auth.js";
-import PromotionController from "../controller/pormotion.controlller.js";
+import PromotionController from "../controller/promotion.controlller.js";
 import StatusController from "../controller/status.controller.js";
 const route = express.Router();
 
