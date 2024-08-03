@@ -9,13 +9,15 @@ export const generateJWTtoken = async (data) => {
       id: data.id,
       loginversion: data.loginversion,
     };
-    const encryptId = Endcrypt(payload.id);
+
+    const encryptId = await Endcrypt(payload.id);
     const jwtData = {
       expiresIn: String(JWT_TIMEOUT),
     };
     const jwtRefreshData = {
       expiresIn: String(JWT_REFRECH_TIMEOUT),
     };
+
     const payloodRefresh = {
       id: encryptId,
       loginversion: data.loginversion,

@@ -4,12 +4,14 @@ import BannerController from "../controller/banner.controller.js";
 import { admin, auth } from "../middleware/auth.js";
 import PromotionController from "../controller/promotion.controlller.js";
 import StatusController from "../controller/status.controller.js";
+import KYCController from "../controller/kyc.controller.js";
 const route = express.Router();
 
 const user = `/user`;
-route.get(`${user}/selAll`, userController.SelectAll);
+route.get(`${user}/selAll`, auth, admin, userController.SelectAll);
 route.get(`${user}/selOne/:id`, userController.SelectOne);
 route.get(`${user}/selAllPage`, userController.SelecAllPage);
+route.post(`${user}/refreshToken`, userController.RefreshToken);
 
 route.post(`${user}/registor`, userController.Registor);
 route.post(`${user}/login`, userController.Login);
@@ -55,5 +57,17 @@ route.post(`${status}/insert`, StatusController.Insert);
 
 route.put(`${status}/update/:id`, StatusController.Update);
 route.delete(`${status}/delete/:id`, StatusController.Delete);
+
+const kyc = "/kyc";
+route.get(`${kyc}/selAll`, KYCController.SelectAll);
+route.get(`${kyc}/selOne/:id`, KYCController.SelectOne);
+
+route.post(`${kyc}/insert`, KYCController.Insert);
+
+route.put(`${kyc}/update/:id`, KYCController.Update);
+route.put(`${kyc}/updateProfile/:id`, KYCController.UpdateProfile);
+route.put(`${kyc}/updateDocImage/:id`, KYCController.UpdateDocImage);
+
+route.delete(`${kyc}/delete/:id`, KYCController.Delete);
 
 export default route;

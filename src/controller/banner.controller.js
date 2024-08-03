@@ -2,6 +2,8 @@ import redis from "../Database/radis.js"; // Ensure correct path and module name
 import { EMessage } from "../service/enum.js";
 import { FindBannerById } from "../service/find.js";
 import {
+  CacheAndInsertData,
+  CacheAndRetrieveUpdatedData,
   SendCreate,
   SendError,
   SendErrorCatch,
@@ -11,6 +13,7 @@ import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateBanner } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
 let cacheKey = "banners";
+const model = "banner";
 const BannerController = {
   async Insert(req, res) {
     try {
@@ -42,20 +45,7 @@ const BannerController = {
         },
       });
 
-      const cachedData = await redis.get(cacheKey);
-      if (!cachedData) {
-        const banners = await prisma.banner.findMany({
-          where: { isActive: true },
-          orderBy: {
-            createAt: "desc",
-          },
-        });
-        await redis.set(cacheKey, JSON.stringify(banners), "EX", 3600);
-      } else {
-        const banners = JSON.parse(cachedData);
-        banners.unshift(banner);
-        await redis.set(cacheKey, JSON.stringify(banners), "EX", 3600);
-      }
+      await CacheAndInsertData(cacheKey, model, banner);
       await redis.del("banners-isPublice");
 
       return SendCreate(res, `${EMessage.insertSuccess}`, banner);
@@ -69,7 +59,7 @@ const BannerController = {
       const id = req.params.id;
       const data = DataExist(req.body);
       const bannerExists = await FindBannerById(id);
-      console.log("data :>> ", data);
+
       if (!bannerExists)
         return SendError(res, 404, `${EMessage.notFound} banner with id ${id}`);
 
@@ -79,7 +69,7 @@ const BannerController = {
         },
         data,
       });
-      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
+      await redis.del(cacheKey, "banners-isPublice");
 
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
@@ -103,7 +93,8 @@ const BannerController = {
         where: { id },
         data: { isPublice: status },
       });
-      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
+      await redis.del(cacheKey, "banners-isPublice");
+
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} banner`, error);
@@ -141,7 +132,7 @@ const BannerController = {
         data: { image: img_url },
       });
 
-      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
+      await redis.del(cacheKey, "banners-isPublice");
 
       return SendSuccess(res, `${EMessage.updateSuccess} image banner`, banner);
     } catch (error) {
@@ -166,7 +157,7 @@ const BannerController = {
         data: { isActive: false },
       });
       // delete cached redis  banners and banners_id
-      await redis.del(cacheKey, cacheKey + id, "banners-isPublice");
+      await redis.del(cacheKey, "banners-isPublice");
 
       return SendSuccess(res, `${EMessage.deleteSuccess} banner`, banner);
     } catch (error) {
@@ -176,20 +167,7 @@ const BannerController = {
 
   async SelAll(req, res) {
     try {
-      let bannerData;
-
-      const cachedData = await redis.get(cacheKey);
-      // await redis.del(cacheKey);
-      if (!cachedData) {
-        bannerData = await prisma.banner.findMany({
-          where: { isActive: true },
-          orderBy: { createAt: "desc" },
-        });
-        await redis.set(cacheKey, JSON.stringify(bannerData), "EX", 3600);
-      } else {
-        bannerData = JSON.parse(cachedData);
-      }
-
+      let bannerData = await CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, `${EMessage.fetchAllSuccess}`, bannerData);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} banner`, error);
@@ -199,22 +177,9 @@ const BannerController = {
   async SelOne(req, res) {
     try {
       const id = req.params.id;
-      let cacheKeyID = cacheKey + id;
-      const cachedData = await redis.get(cacheKeyID);
-      let banner;
-      if (!cachedData) {
-        banner = await FindBannerById(id);
-        if (!banner)
-          return SendError(
-            res,
-            404,
-            `${EMessage.notFound} banner with id ${id}`
-          );
-        await redis.set(cacheKeyID, JSON.stringify(banner), "EX", 3600);
-      } else {
-        banner = JSON.parse(cachedData);
-      }
-
+      let banner = await FindBannerById(id);
+      if (!banner)
+        return SendError(res, 404, `${EMessage.notFound} banner with id ${id}`);
       return SendSuccess(res, `${EMessage.fetchOneSuccess}`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingOne} banner`, error);

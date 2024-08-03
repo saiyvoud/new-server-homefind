@@ -1,5 +1,10 @@
 import jwt from "jsonwebtoken";
-import { SendError, VerifyToken } from "../service/service.js";
+import {
+  CacheAndInsertDataUser,
+  CacheAndRetrieveUpdatedDataUser,
+  SendError,
+  VerifyToken,
+} from "../service/service.js";
 import { EMessage } from "../service/enum.js";
 import prisma from "../util/Prisma.js";
 
@@ -27,13 +32,11 @@ export const admin = async (req, res, next) => {
     const id = req.user;
 
     if (!id) return SendError(res, 401, "You are not allowed id");
-    const user = await prisma.user.findUnique({
-      where: {
-        id: id,
-        isActive: true,
-        OR: [{ role: "admin" }, { role: "supperadmin" }],
-      },
-    });
+    const data = await CacheAndRetrieveUpdatedDataUser("users", "user");
+    const user = data.find(
+      (user) =>
+        user.id === id && (user.role === "admin" || user.role === "supperadmin")
+    );
 
     if (!user) return SendError(res, 401, "You are not allowed ");
     next();

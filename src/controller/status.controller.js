@@ -1,11 +1,18 @@
 import redis from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindStatusById } from "../service/find.js";
-import { SendError, SendErrorCatch, SendSuccess } from "../service/service.js";
+import {
+  CacheAndInsertData,
+  CacheAndRetrieveUpdatedData,
+  SendError,
+  SendErrorCatch,
+  SendSuccess,
+} from "../service/service.js";
 import { DataExist, ValidateStatus } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
 
 const cachedKey = "status";
+const model = "status";
 const StatusController = {
   async Insert(req, res) {
     try {
@@ -26,19 +33,7 @@ const StatusController = {
         },
       });
 
-      const cacheData = await redis.get(cachedKey);
-
-      if (!cacheData) {
-        const statuses = await prisma.status.findMany({
-          where: { isActive: true },
-          orderBy: { createAt: "desc" },
-        });
-        await redis.set(cachedKey, JSON.stringify(statuses), "EX", 3600);
-      } else {
-        const statusData = JSON.parse(cacheData);
-        statusData.unshift(status);
-        await redis.set(cachedKey, JSON.stringify(statusData), "EX", 3600);
-      }
+      await CacheAndInsertData(cachedKey, model, status);
 
       SendSuccess(res, `${EMessage.insertSuccess}`, status);
     } catch (error) {
@@ -56,7 +51,7 @@ const StatusController = {
         where: { id: id },
         data: data,
       });
-      await redis.del(cachedKey, cachedKey + id);
+      await redis.del(cachedKey);
       SendSuccess(res, `${EMessage.updateSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} status`, error);
@@ -72,7 +67,7 @@ const StatusController = {
         where: { id },
         data: { isActive: false },
       });
-      await redis.del(cachedKey, cachedKey + id);
+      await redis.del(cachedKey);
       return SendSuccess(res, `${EMessage.deleteSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} status`, error);
@@ -80,18 +75,8 @@ const StatusController = {
   },
   async SelectAll(req, res) {
     try {
-      let status;
-      const cashData = await redis.get(cachedKey);
-      if (!cashData) {
-        status = await prisma.status.findMany({
-          where: {
-            isActive: true,
-          },
-        });
-        await redis.set(cachedKey, JSON.stringify(status), "EX", 3600);
-      } else {
-        status = JSON.parse(cashData);
-      }
+     
+      const status = await CacheAndRetrieveUpdatedData(cachedKey, model);
       return SendSuccess(res, `${EMessage.fetchAllSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} status`, error);
@@ -100,16 +85,11 @@ const StatusController = {
   async SelectOne(req, res) {
     try {
       const id = req.params.id;
-      //   await redis.del(cachedKey + id);
-      const cashData = await redis.get(cachedKey + id);
-      console.log("object :>> ", cashData);
-      let status;
-      if (!cashData) {
-        status = await FindStatusById(id);
-        await redis.set(cachedKey + id, JSON.stringify(status), "EX", 3600);
-      } else {
-        status = JSON.parse(cashData);
-      }
+
+      const status = await FindStatusById(id);
+      if (!status)
+        return SendError(res, 400, `${EMessage.notFound} with id ${id}`);
+
       SendSuccess(res, `${EMessage.fetchOneSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingOne} status`, error);

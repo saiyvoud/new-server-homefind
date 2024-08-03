@@ -20,19 +20,22 @@ enum UserType {
 }
 
 model User {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive     Boolean  @default(true) @db.Bool
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  isActive     Boolean   @default(true) @db.Bool
   username     String
   phoneNumber  String
   email        String
   password     String
-  profile      String   @default("")
-  kyc          Boolean  @default(false)
-  role         UserType @default(user)
-  loginversion Int      @default(1)
-  createAt     DateTime @default(now())
-  updateAt     DateTime @updatedAt
+  profile      String    @default("")
+  kyc          Boolean   @default(false)
+  role         UserType  @default(user)
+  loginversion Int       @default(1)
+  createAt     DateTime  @default(now())
+  updateAt     DateTime  @updatedAt
   Kyc          Kyc[]
+  Wallet       Wallet[]
+  Review       Review[]
+  Service      Service[]
 
   @@index([username])
   @@index([phoneNumber])
@@ -52,7 +55,7 @@ model Kyc {
   docType   String
   docNo     String
   docImage  String[]
-  profile   String   @default("")
+  profile   String
   user      User     @relation(fields: [userId], references: [id])
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
@@ -63,6 +66,7 @@ model Order {
   isActive Boolean  @default(true) @db.Bool
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+  Review   Review[]
 }
 
 model Banner {
@@ -76,57 +80,97 @@ model Banner {
 }
 
 model Promotion {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true)
-  qty      Int
-  code     String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive   Boolean  @default(true)
+  qty        Int
+  code       String
+  start_time DateTime
+  end_time   DateTime
+  isGiven    Boolean  @default(true) @db.Bool
+  createAt   DateTime @default(now())
+  updateAt   DateTime @updatedAt
+  Wallet     Wallet[]
 }
 
 model Payment {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive    Boolean  @default(true) @db.Bool
+  bankName    String
+  accountName String
+  accountNo   String
+  qr_Image    String
+  isPublic    Boolean  @default(true) @db.Bool
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt
 }
 
 model Review {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   isActive Boolean  @default(true) @db.Bool
+  userId   String   @db.ObjectId
+  orderId  String   @db.ObjectId
+  reason   String
+  star     Float
+  user     User     @relation(fields: [userId], references: [id])
+  order    Order    @relation(fields: [orderId], references: [id])
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
 
 model Service {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  isActive        Boolean  @default(true) @db.Bool
+  poster_id       String   @db.ObjectId
+  category_id     String   @db.ObjectId
+  coverImage      String
+  images          String[]
+  name            String
+  village         String
+  district        String
+  province        String
+  priceMonth      Float
+  priceYear       Float
+  priceCommission Float
+  detail          String
+  isShare         Boolean
+  view            Int      @default(1)
+  status_id       String   @db.ObjectId
+  user            User     @relation(fields: [poster_id], references: [id])
+  category        Category @relation(fields: [category_id], references: [id])
+  status          Status   @relation(fields: [status_id], references: [id])
+  createAt        DateTime @default(now())
+  updateAt        DateTime @updatedAt
 }
 
 model Status {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean   @default(true) @db.Bool
   name     String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  Service  Service[]
 }
 
 model Category {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  isActive Boolean   @default(true) @db.Bool
   title    String
   icon     String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  Service  Service[]
 }
 
 model Wallet {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  isActive    Boolean   @default(true) @db.Bool
+  userId      String    @db.ObjectId
+  promotionId String    @db.ObjectId
+  status      Boolean   @default(true)
+  user        User      @relation(fields: [userId], references: [id])
+  promotion   Promotion @relation(fields: [promotionId], references: [id])
+  createAt    DateTime  @default(now())
+  updateAt    DateTime  @updatedAt
 }
 
 model Notification {

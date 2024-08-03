@@ -1,10 +1,17 @@
+import redis from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindCategoryById } from "../service/find.js";
-import { SendCreate, SendErrorCatch } from "../service/service.js";
+import {
+  CacheAndRetrieveUpdatedData,
+  SendCreate,
+  SendErrorCatch,
+} from "../service/service.js";
 import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateCategory } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
 
+const cacheKey = "categorys";
+const model = "category";
 const CategoryController = {
   async Insert(req, res) {
     try {
@@ -30,6 +37,7 @@ const CategoryController = {
           icon: img_url,
         },
       });
+      await CacheAndInsertData(cacheKey, model, category);
       return SendCreate(res, `${EMessage.insertSuccess}`, category);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.insertFailed}`, error);
@@ -48,6 +56,7 @@ const CategoryController = {
         },
         data,
       });
+      await redis.del(cacheKey);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -70,6 +79,7 @@ const CategoryController = {
           icon: img_url,
         },
       });
+      await redis.del(cacheKey);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -89,6 +99,7 @@ const CategoryController = {
           isActive: false,
         },
       });
+      await redis.del(cacheKey);
       return SendCreate(res, `${EMessage.deleteSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed}`, error);
@@ -96,14 +107,7 @@ const CategoryController = {
   },
   async SelectAll(req, res) {
     try {
-      const category = await prisma.category.findMany({
-        where: {
-          isActive: true,
-        },
-        orderBy: {
-          createAt: "desc",
-        },
-      });
+      const category = await CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendCreate(res, `${EMessage.fetchAllSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll}`, error);

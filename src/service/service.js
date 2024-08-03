@@ -3,6 +3,8 @@ import { SECRET_KEY } from "../config/api.config.js";
 import jwt from "jsonwebtoken";
 import prisma from "../util/Prisma.js";
 import { generateJWTtoken } from "../config/GenerateToken.js";
+import redis from "../Database/radis.js";
+import { FindUserById, FindUserByIdShowPassword } from "./find.js";
 
 export const SendSuccess = (res, message, data) => {
   res.status(200).json({ status: true, message, data });
@@ -20,6 +22,134 @@ export const SendErrorCatch = (res, message, error) => {
   res.status(500).json({ status: false, message, error });
 };
 
+export const CheckUniqueElement = (a, b) => {
+  const result = [];
+  for (let i = 0; i < a.length; i++) {
+    if (!b.includes(a[i])) {
+      result.push(a[i]);
+    }
+  }
+  return result;
+};
+export const CacheAndInsertDataUser = async (cacheKey, newData) => {
+  try {
+    // Cache the new user data
+
+    const cachedData = await redis.get(cacheKey);
+
+    if (cachedData) {
+      // If cache exists, update it with the new user
+      const users = JSON.parse(cachedData);
+      users.unshift(newData);
+      await redis.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
+    } else {
+      // If no cache, fetch all active users from database and cache them
+      const users = await prisma.user.findMany({
+        where: { isActive: true },
+        orderBy: { createAt: "desc" },
+        select: {
+          id: true,
+          isActive: true,
+          username: true,
+          email: true,
+          phoneNumber: true,
+          profile: true,
+          kyc: true,
+          role: true,
+          createAt: true,
+          updateAt: true,
+        },
+      });
+      await redis.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
+    }
+  } catch (error) {
+    console.error(`Failed to cache and insert data for ${model}:`, error);
+    throw error;
+  }
+};
+
+export const CacheAndInsertData = async (cacheKey, model, newData) => {
+  try {
+    const cachedData = await redis.get(cacheKey);
+    let data;
+
+    if (!cachedData) {
+      data = await prisma[model].findMany({
+        where: { isActive: true },
+        orderBy: { createAt: "desc" },
+      });
+
+      await redis.set(cacheKey, JSON.stringify(data), "EX", 3600);
+    } else {
+      data = JSON.parse(cachedData);
+      data.unshift(newData);
+
+      await redis.set(cacheKey, JSON.stringify(data), "EX", 3600);
+    }
+  } catch (error) {
+    console.error(`Failed to cache and insert data for ${model}:`, error);
+    throw error;
+  }
+};
+
+export const CacheAndRetrieveUpdatedData = async (cacheKey, model, select) => {
+  try {
+    const cachedData = await redis.get(cacheKey);
+    let data;
+
+    if (!cachedData) {
+      data = await prisma[model].findMany({
+        where: { isActive: true },
+        select,
+        orderBy: { createAt: "desc" },
+      });
+
+      await redis.set(cacheKey, JSON.stringify(data), "EX", 3600);
+    } else {
+      data = JSON.parse(cachedData);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Failed to retrieve updated data for ${model}:`, error);
+    throw error;
+  }
+};
+
+export const CacheAndRetrieveUpdatedDataUser = async (cacheKey, model) => {
+  try {
+    const cachedData = await redis.get(cacheKey);
+    let data;
+
+    if (!cachedData) {
+      data = await prisma.user.findMany({
+        where: { isActive: true },
+        orderBy: { createAt: "desc" },
+        select: {
+          id: true,
+          isActive: true,
+          username: true,
+          email: true,
+          phoneNumber: true,
+          profile: true,
+          kyc: true,
+          role: true,
+          createAt: true,
+          updateAt: true,
+        },
+      });
+
+      await redis.set(cacheKey, JSON.stringify(data), "EX", 3600);
+    } else {
+      data = JSON.parse(cachedData);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Failed to retrieve updated data for ${model}:`, error);
+    throw error;
+  }
+};
 export const Decrypt = (hash) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -74,9 +204,7 @@ export const VerifyToken = (token) => {
         let decryptedPass = id.toString(CryptoJS.enc.Utf8);
         decryptedPass = decryptedPass.replace(/"/g, "");
 
-        const user = await prisma.user.findUnique({
-          where: { id: decryptedPass, isActive: true },
-        });
+        const user = await FindUserById(decryptedPass);
 
         if (!user) {
           console.error("Authorization Error: User not found");
@@ -99,30 +227,34 @@ export const VerifyRefreshToken = (data) => {
     jwt.verify(data, SECRET_KEY, async (err, decode) => {
       try {
         if (err) return reject(err);
-        const refreshDecrip = await Decrypt(decode.id, SECRET_KEY);
-        if (!refreshDecrip) return reject("Error Verify Authorization");
-        const id = await Decrypt(refreshDecrip, SECRET_KEY);
+        const refreshDecrip = await Decrypt(decode.id);
+        let decropRefresh = refreshDecrip.toString(CryptoJS.enc.Utf8);
+        decropRefresh = decropRefresh.replace(/"/g, "");
+        if (!decropRefresh) return reject("Error Verify Authorizationsdfasdf");
+        const id = await Decrypt(decropRefresh);
+        console.log("id :>> ", id);
         if (!id) {
           return reject("Error RefreshToken");
         }
         let decryptedPass = id.toString(CryptoJS.enc.Utf8);
         decryptedPass = decryptedPass.replace(/"/g, "");
 
-        const user = await prisma.user.findUnique({
-          where: { id: decryptedPass },
-        });
+        const user = await FindUserByIdShowPassword(decryptedPass);
+        console.log("user :>> ", user);
         if (!user) return reject("Error Verify Authorization");
-        const update = await prisma.user.update({
-          where: { id },
-          data: {
-            loginversion: loginversion + 1,
-          },
-        });
-        const encrypId = await Endcrypt(user.id, SECRET_KEY);
+        const [update, encrypId] = await Promise.all([
+          prisma.user.update({
+            where: { id: user.id },
+            data: { loginversion: user.loginversion + 1 },
+          }),
+          Endcrypt(user.id, SECRET_KEY),
+        ]);
+
         const dataJWT = {
           id: encrypId,
           loginversion: update.loginversion,
         };
+
         const token = await generateJWTtoken(dataJWT);
         resolve(token);
       } catch (error) {

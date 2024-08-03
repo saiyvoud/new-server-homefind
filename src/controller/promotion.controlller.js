@@ -1,5 +1,7 @@
 import { EMessage } from "../service/enum.js";
 import {
+  CacheAndInsertData,
+  CacheAndRetrieveUpdatedData,
   SendCreate,
   SendError,
   SendErrorCatch,
@@ -8,18 +10,25 @@ import {
 import shortid from "shortid";
 import prisma from "../util/Prisma.js";
 import redis from "../Database/radis.js";
-import { DataExist } from "../service/validate.js";
-import { FindPromotion } from "../service/find.js";
+import { DataExist, ValidatePromotion } from "../service/validate.js";
+import { FindPromotionId } from "../service/find.js";
 
-let cacheKey = "promotion";
+let cacheKey = "promotions";
+let model = "promotion";
+
 const PromotionController = {
   async Insert(req, res) {
     try {
-      let qty = req.body.qty;
-
-      if (!qty) {
-        SendError(res, 400, `${EMessage.pleaseInput}: qty is not a number`);
+      const validate = ValidatePromotion(req.body);
+      if (validate.length > 0) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${validate.join(", ")}`
+        );
       }
+
+      let { qty, start_time, end_time } = req.body;
       if (typeof qty !== "number") {
         qty = parseInt(qty, 10);
       }
@@ -29,22 +38,11 @@ const PromotionController = {
         data: {
           qty,
           code,
+          start_time,
+          end_time,
         },
       });
-      const cachedData = await redis.get(cacheKey);
-      if (!cachedData) {
-        const promo = await prisma.promotion.findMany({
-          where: { isActive: true },
-          orderBy: {
-            createAt: "desc",
-          },
-        });
-        await redis.set(cacheKey, JSON.stringify(promo), "EX", 3600);
-      } else {
-        const promo = JSON.parse(cachedData);
-        promo.unshift(promotion);
-        await redis.set(cacheKey, JSON.stringify(promo), "EX", 3600);
-      }
+      await CacheAndInsertData(cacheKey, model, promotion);
       SendCreate(res, `${EMessage.insertSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.insertFailed} promotion`, error);
@@ -58,7 +56,7 @@ const PromotionController = {
       if (typeof data.qty !== "number") {
         data.qty = parseInt(data.qty, 10);
       }
-      const promotionExists = await FindPromotion(id);
+      const promotionExists = await FindPromotionId(id);
       if (!promotionExists) {
         return SendError(
           res,
@@ -70,7 +68,7 @@ const PromotionController = {
         where: { id },
         data,
       });
-      await redis.del(cacheKey, cacheKey + id);
+      await redis.del(cacheKey);
       SendSuccess(res, `${EMessage.updateSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} promotion`, error);
@@ -79,7 +77,7 @@ const PromotionController = {
   async Delete(req, res) {
     try {
       const id = req.params.id;
-      const promotionExists = await FindPromotion(id);
+      const promotionExists = await FindPaymentBy(id);
       if (!promotionExists) {
         return SendError(
           res,
@@ -93,7 +91,7 @@ const PromotionController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey, cacheKey + id);
+      await redis.del(cacheKey);
       SendSuccess(res, `${EMessage.deleteSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} promotion`, error);
@@ -101,21 +99,7 @@ const PromotionController = {
   },
   async SelAll(req, res) {
     try {
-      let promotion;
-      const cachedData = await redis.get(cacheKey);
-      if (!cachedData) {
-        promotion = await prisma.promotion.findMany({
-          where: {
-            isActive: true,
-          },
-          orderBy: {
-            createAt: "desc",
-          },
-        });
-        await redis.set(cacheKey, JSON.stringify(promotion), "EX", 3600);
-      } else {
-        promotion = JSON.parse(cachedData);
-      }
+      let promotion = await CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.fetchAllSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} promotion`, error);
@@ -123,26 +107,14 @@ const PromotionController = {
   },
   async SelOne(req, res) {
     try {
-      let promotion;
-
       const id = req.params.id;
-      const cachedData = await redis.get(cacheKey + id);
-      if (!cachedData) {
-        promotion = await prisma.promotion.findUnique({
-          where: {
-            isActive: true,
-            id,
-          },
-        });
-        if (!promotion)
-          return SendError(
-            res,
-            404,
-            `${EMessage.notFound} promotion with id ${id}`
-          );
-        await redis.set(cacheKey + id, JSON.stringify(promotion), "Ex", 3600);
-      } else {
-        promotion = JSON.parse(cachedData);
+      let promotion = await FindPromotionId(id);
+      if (!promotion) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} promotion with id:${id}`
+        );
       }
       SendSuccess(res, `${EMessage.fetchOneSuccess}`, promotion);
     } catch (error) {
@@ -151,7 +123,7 @@ const PromotionController = {
   },
   async SelectByCode(req, res) {
     try {
-     // await redis.del(cacheKey);
+      // await redis.del(cacheKey);
       const code = req.params.code;
       const cachedData = await redis.get(cacheKey);
       let promotion;

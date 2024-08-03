@@ -27,6 +27,7 @@ export const EMessage = {
     tokenExpired: "Token has expired",
     invalidToken: "Invalid token",
     refreshTokenSuccess: "Token refreshed successfully",
+    refreshTokenunSuccess: "Token refreshed unsuccess",
     tokenGenerationError: "Error generating token",
   
     userAlreadyExists: "User already exists",

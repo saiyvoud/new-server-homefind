@@ -55,8 +55,8 @@ export const ValidateBanner = (data) => {
 };
 
 export const ValidatePromotion = (data) => {
-  const { qty } = data;
-  return validateData({ qty });
+  const { qty, start_time, end_time } = data;
+  return validateData({ qty, start_time, end_time });
 };
 
 export const ValidateCategory = (data) => {
@@ -67,7 +67,7 @@ export const ValidateCategory = (data) => {
 export const ValidateKYC = (data) => {
   const {
     userId,
-    firstnmae,
+    firstname,
     lastname,
     age,
     village,
@@ -78,7 +78,7 @@ export const ValidateKYC = (data) => {
   } = data;
   return validateData({
     userId,
-    firstnmae,
+    firstname,
     lastname,
     age,
     village,
@@ -86,5 +86,46 @@ export const ValidateKYC = (data) => {
     province,
     docType,
     docNo,
+  });
+};
+
+export const ValidateWallet = (data) => {
+  const { userId, promotion_id } = data;
+  return validateData({ userId, promotion_id });
+};
+
+export const ValidatePayment = (data) => {
+  const { bankName, accountName, accountNo } = data;
+  return validateData({ bankName, accountName, accountNo });
+};
+
+export const ValidateService = (data) => {
+  const {
+    poster_id,
+    category_id,
+    name,
+    village,
+    district,
+    province,
+    priceMoth,
+    priceYear,
+    priceCommission,
+    detail,
+    isShare,
+    status_id,
+  } = data;
+  return validateData({
+    poster_id,
+    category_id,
+    name,
+    village,
+    district,
+    province,
+    priceMoth,
+    priceYear,
+    priceCommission,
+    detail,
+    isShare,
+    status_id,
   });
 };

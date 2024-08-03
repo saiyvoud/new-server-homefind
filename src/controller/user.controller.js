@@ -2,9 +2,12 @@ import { EMessage } from "../service/enum.js";
 import {
   ExistingUser,
   FindUserById,
+  FindUserByIdShowPassword,
   FindUserByPhoneNumber,
 } from "../service/find.js";
 import {
+  CacheAndInsertDataUser,
+  CacheAndRetrieveUpdatedDataUser,
   Decrypt,
   Endcrypt,
   SendCreate,
@@ -26,6 +29,8 @@ import { generateJWTtoken } from "../config/GenerateToken.js";
 import { KLimit, SECRET_KEY } from "../config/api.config.js";
 import CryptoJS from "crypto-js";
 import { UploadImage } from "../service/uploadImage.js";
+const cacheKey = "users";
+const model = "user";
 export const UserControlller = {
   async Registor(req, res) {
     try {
@@ -99,35 +104,7 @@ export const UserControlller = {
       const token = await generateJWTtoken(dataJWT);
       const result = { ...user, token };
 
-      // Cache the new user data
-      const cacheKey = "users";
-      const cachedData = await redis.get(cacheKey);
-
-      if (cachedData) {
-        // If cache exists, update it with the new user
-        const users = JSON.parse(cachedData);
-        users.unshift(user);
-        await redis.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
-      } else {
-        // If no cache, fetch all active users from database and cache them
-        const users = await prisma.user.findMany({
-          where: { isActive: true },
-          orderBy: { createAt: "desc" },
-          select: {
-            id: true,
-            isActive: true,
-            username: true,
-            email: true,
-            phoneNumber: true,
-            profile: true,
-            kyc: true,
-            role: true,
-            createAt: true,
-            updateAt: true,
-          },
-        });
-        await redis.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
-      }
+      await CacheAndInsertDataUser(cacheKey, user);
 
       // Send response
       return SendCreate(res, `${EMessage.registrationSuccess}`, result);
@@ -142,57 +119,25 @@ export const UserControlller = {
       if (!refreshToken)
         return SendError(
           res,
+          400,
           `${EMessage.pleaseInput} refreshToken is required`
         );
 
       const result = await VerifyRefreshToken(refreshToken);
       if (!result) return SendError(res, "Error Generating refresh token");
-      return SendSuccess(res, result);
+      return SendSuccess(res, `${EMessage.refreshTokenSuccess}`, result);
     } catch (error) {
-      return SendErrorCatch(res, `${EMessage.registorFail} user `, error);
+      return SendErrorCatch(
+        res,
+        `${EMessage.refreshTokenunSuccess} user `,
+        error
+      );
     }
   },
   async SelectAll(req, res) {
     try {
-      //   await redis.del("users");
-      const cacheKey = "users";
-
-      // Check Redis cache first
-      const cachedData = await redis.get(cacheKey);
-
-      if (cachedData) {
-        return SendSuccess(
-          res,
-          `${EMessage.fetchAllSuccess}`,
-          JSON.parse(cachedData)
-        );
-      }
-
-      // If no cache, fetch data from the database
-      const users = await prisma.user.findMany({
-        where: { isActive: true },
-        orderBy: {
-          createAt: "desc",
-        },
-        select: {
-          id: true,
-          isActive: true,
-          username: true,
-          email: true,
-          phoneNumber: true,
-          profile: true,
-          kyc: true,
-          role: true,
-          createAt: true,
-          updateAt: true,
-        },
-      });
-
-      // Store the result in Redis with an expiration time of 1 hour
-      await redis.set(cacheKey, JSON.stringify(users), "EX", 3600);
-      console.log("Serving from database");
-
-      return SendSuccess(res, `${EMessage.fetchAllSuccess} user`, users);
+      const user = await CacheAndRetrieveUpdatedDataUser(cacheKey, model);
+      return SendSuccess(res, `${EMessage.fetchAllSuccess} user`, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} user`, error);
     }
@@ -201,39 +146,10 @@ export const UserControlller = {
   async SelectOne(req, res) {
     try {
       const id = req.params.id;
-      const cashData = await redis.get("users");
-      if (cashData) {
-        const users = JSON.parse(cashData);
-
-        const user = users.find((user) => user.id === id);
-        if (!user) {
-          return SendError(res, 404, `${EMessage.notFound} user with id ${id}`);
-        }
-        SendSuccess(res, `${EMessage.fetchOneSuccess} user`, user);
-      } else {
-        const user = await prisma.user.findUnique({
-          where: { id, isActive: true },
-          select: {
-            id: true,
-            isActive: true,
-            username: true,
-            email: true,
-            phoneNumber: true,
-            profile: true,
-            kyc: true,
-            role: true,
-            createAt: true,
-            updateAt: true,
-          },
-        });
-        if (!user)
-          return SendError(
-            res,
-            404,
-            `${EMessage.notFound} user with id :${id}`
-          );
-        return SendSuccess(res, `${EMessage.fetchOneSuccess} user`, user);
-      }
+      const user = await FindUserById(id);
+      if (!user)
+        return SendError(res, 404, `${EMessage.notFound} user with id :${id}`);
+      return SendSuccess(res, `${EMessage.fetchOneSuccess} user`, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingOne} user`, error);
     }
@@ -280,6 +196,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
+
       const encrypId = await Endcrypt(user.id);
       const dataJWT = {
         id: encrypId,
@@ -290,6 +207,7 @@ export const UserControlller = {
         JSON.parse(JSON.stringify(updateUser)),
         JSON.parse(JSON.stringify(token))
       );
+      await redis.del(cacheKey);
       return SendCreate(res, `${EMessage.loginSuccess}`, result);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.loginfall} user `, error);
@@ -303,7 +221,7 @@ export const UserControlller = {
         return SendError(res, 400, "Please input:" + validate.join(","));
       }
       const { oldPassword, newPassword } = req.body;
-      const userExists = await FindUserById(id);
+      const userExists = await FindUserByIdShowPassword(id);
       if (!userExists)
         return SendError(res, 404, `${EMessage.notFound} user with ID ${id}`);
       let passDecript = await Decrypt(
@@ -313,7 +231,7 @@ export const UserControlller = {
       let decriptPass = passDecript.toString(CryptoJS.enc.Utf8);
       decriptPass = decriptPass.replace(/"/g, "");
       if (oldPassword !== decriptPass)
-        return SendError(res, "Password does not match");
+        return SendError(res, 400, "Password does not match");
       const hashPassword = await Endcrypt(newPassword);
       const user = await prisma.user.update({
         where: {
@@ -336,6 +254,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
+      await redis.del(cacheKey);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `Change password fail`, error);
@@ -374,6 +293,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
+      await redis.del(cacheKey);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `Forgot password fail`, error);
@@ -432,7 +352,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      await redis.del("users");
+      await redis.del(cacheKey);
 
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
@@ -461,7 +381,7 @@ export const UserControlller = {
           kyc: status,
         },
       });
-      await redis.del("users");
+      await redis.del(cacheKey);
       SendSuccess(res, `${EMessage.updateSuccess} user with id ${user.id}`);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} User KYC status`, error);
@@ -480,7 +400,7 @@ export const UserControlller = {
         },
         data: { isActive: false },
       });
-      redis.del("users");
+      await redis.del(cacheKey);
       return SendSuccess(
         res,
         `${EMessage.deleteSuccess} user with id ${user.id}`
@@ -569,7 +489,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      await redis.del("users");
+      await redis.del(cacheKey);
       SendSuccess(res, `${EMessage.updateSuccess}`, user);
     } catch (error) {
       console.error("Error updating image:", error);
