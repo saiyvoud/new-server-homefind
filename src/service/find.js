@@ -1,5 +1,6 @@
 import redis from "../Database/radis.js";
 import prisma from "../util/Prisma.js";
+import { CacheAndRetrieveUpdatedData } from "./service.js";
 
 // Generic function to find a single record
 const findOne = (model, where, select) => {
@@ -25,7 +26,7 @@ const findFirst = (model, where) => {
   });
 };
 
- const findIdInCached = async (cacheKey, model, id, select) => {
+const findIdInCached = async (cacheKey, model, id, select) => {
   // Retrieve cached data from Redis
   let cachedData = await redis.get(cacheKey);
 
@@ -35,6 +36,8 @@ const findFirst = (model, where) => {
       where: { id, isActive: true },
       select,
     });
+
+    CacheAndRetrieveUpdatedData(cacheKey, model);
     return result;
   }
 

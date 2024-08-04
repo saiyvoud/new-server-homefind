@@ -21,6 +21,7 @@ import {
   VaildateForgotPassword,
   ValidateChangePassword,
   ValidateLogin,
+  ValidateLoginEmail,
   ValidateUser,
 } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
@@ -207,7 +208,66 @@ export const UserControlller = {
         JSON.parse(JSON.stringify(updateUser)),
         JSON.parse(JSON.stringify(token))
       );
-      await redis.del(cacheKey);
+      // await redis.del(cacheKey);
+      return SendCreate(res, `${EMessage.loginSuccess}`, result);
+    } catch (error) {
+      return SendErrorCatch(res, `${EMessage.loginfall} user `, error);
+    }
+  },
+  async LoginEmail(req, res) {
+    try {
+      const validate = ValidateLoginEmail(req.body);
+      if (validate.length > 0)
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${validate.join(", ")}`
+        );
+      const { email, password } = req.body;
+      const user = await prisma.user.findFirst({
+        where: { email, isActive: true },
+      });
+      if (!user)
+        return SendError(
+          res,
+          404,
+          EMessage.notFound + ` user with email: ${email}`
+        );
+      let passDecript = await Decrypt(user.password, SECRET_KEY);
+      let decryptedPass = passDecript.toString(CryptoJS.enc.Utf8);
+      decryptedPass = decryptedPass.replace(/"/g, "");
+      if (decryptedPass !== password)
+        return SendError(res, 400, "Password is not match");
+      const updateUser = await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: { loginversion: user.loginversion + 1 },
+        select: {
+          id: true,
+          isActive: true,
+          username: true,
+          email: true,
+          phoneNumber: true,
+          profile: true,
+          kyc: true,
+          role: true,
+          createAt: true,
+          updateAt: true,
+        },
+      });
+
+      const encrypId = await Endcrypt(user.id);
+      const dataJWT = {
+        id: encrypId,
+        loginversion: user.loginversion,
+      };
+      const token = await generateJWTtoken(dataJWT);
+      const result = Object.assign(
+        JSON.parse(JSON.stringify(updateUser)),
+        JSON.parse(JSON.stringify(token))
+      );
+      // await redis.del(cacheKey);
       return SendCreate(res, `${EMessage.loginSuccess}`, result);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.loginfall} user `, error);
@@ -254,7 +314,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      await redis.del(cacheKey);
+      // await redis.del(cacheKey);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `Change password fail`, error);
@@ -293,7 +353,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      await redis.del(cacheKey);
+      // await redis.del(cacheKey);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `Forgot password fail`, error);
@@ -353,7 +413,7 @@ export const UserControlller = {
         },
       });
       await redis.del(cacheKey);
-
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} user `, error);
@@ -382,6 +442,7 @@ export const UserControlller = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
       SendSuccess(res, `${EMessage.updateSuccess} user with id ${user.id}`);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} User KYC status`, error);
@@ -401,6 +462,7 @@ export const UserControlller = {
         data: { isActive: false },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
       return SendSuccess(
         res,
         `${EMessage.deleteSuccess} user with id ${user.id}`
@@ -490,6 +552,7 @@ export const UserControlller = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
       SendSuccess(res, `${EMessage.updateSuccess}`, user);
     } catch (error) {
       console.error("Error updating image:", error);

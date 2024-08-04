@@ -53,11 +53,12 @@ const checkDatabaseConnection = async () => {
   }
 };
 
-// await redis.del("users");
+await redis.del("promotions");
 
 // const user = await redis.get("users");
 // console.log('user :>> ', user);
 // Start Server
+
 app.listen(SERVER_PORT, () => {
   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);
   console.log(`Server Already: ${SERVER_PORT}`);

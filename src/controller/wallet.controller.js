@@ -59,17 +59,25 @@ const WalletController = {
     try {
       const { id } = req.params;
       const data = DataExist(req.body);
+
+      // Initialize promises with the wallet check
       const promises = [FindWalletById(id)];
 
+      // Add related entity checks if they exist in data
       if (data.userId) promises.push(FindUserById(data.userId));
       if (data.promotionId) promises.push(FindPromotionId(data.promotionId));
+
+      // Convert status to boolean if it's provided and not already a boolean
       if (data.status && typeof data.status !== "boolean") {
         data.status = data.status === "true";
       }
+
+      // Resolve all promises
       const [walletExists, userExists, promotionExists] = await Promise.all(
         promises
       );
 
+      // Check if wallet exists and if related entities exist
       if (
         !walletExists ||
         (data.userId && !userExists) ||
@@ -80,15 +88,26 @@ const WalletController = {
           404,
           `${EMessage.notFound} ${
             !walletExists ? "wallet" : data.userId ? "user" : "promotion"
-          } with id: ${id || data.userId || data.promotionId}`
+          } with id: ${
+            !walletExists ? id : data.userId ? data.userId : data.promotionId
+          }`
         );
       }
 
-      const wallet = await prisma.wallet.update({ where: { id }, data });
-      await redis.del(cacheKey);
+      // Update the wallet
+      const wallet = await prisma.wallet.update({
+        where: { id },
+        data,
+      });
 
+      // Clear the cache
+      await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
+
+      // Send success response
       SendSuccess(res, `${EMessage.updateSuccess}`, wallet);
     } catch (error) {
+      // Handle errors
       SendErrorCatch(res, `${EMessage.updateFailed} wallet`, error);
     }
   },
@@ -107,6 +126,8 @@ const WalletController = {
         where: { id },
         data: { isActive: false },
       });
+      await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess}`, wallet);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} wallet`, error);

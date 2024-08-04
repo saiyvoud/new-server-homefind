@@ -1,0 +1,32 @@
+
+version: '3.9'
+
+services:
+  app:    
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    container_name: Node_Homefind
+    ports:
+      -"81:81"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - app_networks
+
+  redis:
+    image: redis:alpine
+    container_name: redis_server
+    ports:
+      -"6379:6379"
+    networks:
+      - app_networks
+    volumes:
+      -redis_data:/data
+networks:
+  app_networks:
+    driver: bridge
+volumes:
+  redis_data:

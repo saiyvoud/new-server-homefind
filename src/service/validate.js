@@ -24,6 +24,7 @@ export const ValidateLogin = (data) => {
   const { username, password } = data;
   return validateData({ username, password });
 };
+
 export const ValidataLoginPhoneNumber = (data) => {
   const { phoneNumber, password } = data;
   return validateData({ phoneNumber, password });
@@ -55,8 +56,8 @@ export const ValidateBanner = (data) => {
 };
 
 export const ValidatePromotion = (data) => {
-  const { qty, start_time, end_time } = data;
-  return validateData({ qty, start_time, end_time });
+  const { qty, startTime, endTime } = data;
+  return validateData({ qty, startTime, endTime });
 };
 
 export const ValidateCategory = (data) => {
@@ -90,8 +91,8 @@ export const ValidateKYC = (data) => {
 };
 
 export const ValidateWallet = (data) => {
-  const { userId, promotion_id } = data;
-  return validateData({ userId, promotion_id });
+  const { userId, promotionId } = data;
+  return validateData({ userId, promotionId });
 };
 
 export const ValidatePayment = (data) => {
@@ -101,31 +102,49 @@ export const ValidatePayment = (data) => {
 
 export const ValidateService = (data) => {
   const {
-    poster_id,
-    category_id,
+    posterId,
+    categoryId,
     name,
     village,
     district,
     province,
-    priceMoth,
+    priceMonth,
     priceYear,
     priceCommission,
     detail,
     isShare,
-    status_id,
+    statusId,
   } = data;
   return validateData({
-    poster_id,
-    category_id,
+    posterId,
+    categoryId,
     name,
     village,
     district,
     province,
-    priceMoth,
+    priceMonth,
     priceYear,
     priceCommission,
     detail,
     isShare,
-    status_id,
+    statusId,
   });
+};
+
+export const ValidateOrder = (data) => {
+  const { userId, serviceId, paymentId, promotionId, bookingPrice, totalPrice } =
+    data;
+  return validateData({
+    userId,
+    serviceId,
+    paymentId,
+    promotionId,
+    bookingPrice,
+    totalPrice,
+  });
+};
+
+export const ValidateReview = (data) => {
+  const { userId, orderId, reason, star } = data;
+  return validateData({ userId, orderId, reason, star });
 };

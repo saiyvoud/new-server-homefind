@@ -70,7 +70,7 @@ const BannerController = {
         data,
       });
       await redis.del(cacheKey, "banners-isPublice");
-
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} banner`, error);
@@ -94,6 +94,7 @@ const BannerController = {
         data: { isPublice: status },
       });
       await redis.del(cacheKey, "banners-isPublice");
+      CacheAndRetrieveUpdatedData(cacheKey, model);
 
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
@@ -133,7 +134,7 @@ const BannerController = {
       });
 
       await redis.del(cacheKey, "banners-isPublice");
-
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, `${EMessage.updateSuccess} image banner`, banner);
     } catch (error) {
       return SendErrorCatch(
@@ -158,7 +159,7 @@ const BannerController = {
       });
       // delete cached redis  banners and banners_id
       await redis.del(cacheKey, "banners-isPublice");
-
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, `${EMessage.deleteSuccess} banner`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.deleteFailed} banner`, error);

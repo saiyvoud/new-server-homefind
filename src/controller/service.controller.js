@@ -24,21 +24,25 @@ const ServiceController = {
     try {
       const validate = ValidateService(req.body);
       if (validate.length > 0) {
-        SendError(res, 400, `${EMessage.pleaseInput} ${validate.join(", ")}`);
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput} ${validate.join(", ")}`
+        );
       }
       let {
-        poster_id,
-        category_id,
+        posterId,
+        categoryId,
         name,
         village,
         district,
         province,
-        priceMoth,
+        priceMonth,
         priceYear,
         priceCommission,
         detail,
         isShare,
-        status_id,
+        statusId,
       } = req.body;
       const data = req.files;
       if (!data || !data.images || !data.coverImage) {
@@ -54,8 +58,8 @@ const ServiceController = {
           }`
         );
       }
-      if (typeof priceMoth !== "number") {
-        priceMoth = parseFloat(priceMoth);
+      if (typeof priceMonth !== "number") {
+        priceMonth = parseFloat(priceMonth);
       }
       if (typeof priceYear !== "number") {
         priceYear = parseFloat(priceYear);
@@ -67,9 +71,9 @@ const ServiceController = {
         isShare = isShare === "true";
       }
       const [userExists, categoryExists, statsExists] = await Promise.all([
-        FindUserById(poster_id),
-        FindCategoryById(category_id),
-        FindStatusById(status_id),
+        FindUserById(posterId),
+        FindCategoryById(categoryId),
+        FindStatusById(statusId),
       ]);
       if (!userExists || !statsExists || !categoryExists) {
         return SendError(
@@ -78,7 +82,7 @@ const ServiceController = {
           `${EMessage.notFound} ${
             !userExists ? "user" : !categoryExists ? "category" : "status"
           } with id:${
-            !userExists ? poster_id : !categoryExists ? category_id : status_id
+            !userExists ? posterId : !categoryExists ? categoryId : statusId
           }`
         );
       }
@@ -105,18 +109,18 @@ const ServiceController = {
       ]);
       const service = await prisma.service.create({
         data: {
-          poster_id,
-          category_id,
+          posterId,
+          categoryId,
           name,
           village,
           district,
           province,
-          priceMoth,
+          priceMonth,
           priceYear,
           priceCommission,
           detail,
           isShare,
-          status_id,
+          statusId,
           images: images_url_list,
           coverImage: coverImage_url,
         },
@@ -131,44 +135,69 @@ const ServiceController = {
     try {
       const id = req.params.id;
       const data = DataExist(req.body);
+
+      // Check if the service exists
       const serviceExists = await FindServiceById(id);
-      if (serviceExists) {
-        SendError(res, 404, `${EMessage.notFound} service with id:${id}`);
+      if (!serviceExists) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} service with id: ${id}`
+        );
       }
+
+      // Prepare promises to check existence of related entities
       const promiseList = [];
-      if (data.poster_id) {
-        promiseList.push(FindUserById(data.poster_id));
+      if (data.posterId) {
+        promiseList.push(FindUserById(data.posterId));
       }
-      if (data.category_id) {
-        promiseList.push(FindCategoryById(data.category_id));
+      if (data.categoryId) {
+        promiseList.push(FindCategoryById(data.categoryId));
       }
-      if (data.status_id) {
-        promiseList.push(FindStatusById(data.status_id));
+      if (data.statusId) {
+        promiseList.push(FindStatusById(data.statusId));
       }
-      const [userExists, categoryExists, statsExists] = await Promise.all(
-        promiseList
-      );
+
+      // Resolve all promises
+      const results = await Promise.all(promiseList);
+      let userExists, categoryExists, statusExists;
+      if (data.posterId) {
+        userExists = results.shift();
+      }
+      if (data.categoryId) {
+        categoryExists = results.shift();
+      }
+      if (data.statusId) {
+        statusExists = results.shift();
+      }
       if (
-        (data.poster_id && !userExists) ||
-        (data.status_id && !statsExists) ||
-        (data.category_id && !categoryExists)
+        (data.posterId && !userExists) ||
+        (data.categoryId && !categoryExists) ||
+        (data.statusId && !statusExists)
       ) {
+        // Check if any related entities do not exist
         return SendError(
           res,
           404,
           `${EMessage.notFound} ${
-            !userExists ? "user" : !categoryExists ? "category" : "status"
-          } with id:${
-            !userExists
-              ? data.poster_id
-              : !categoryExists
-              ? data.category_id
-              : data.status_id
+            data.posterId && !userExists
+              ? "user"
+              : data.categoryId && !categoryExists
+              ? "category"
+              : "status"
+          } with id: ${
+            data.posterId && !userExists
+              ? data.posterId
+              : data.categoryId && !categoryExists
+              ? data.categoryId
+              : data.statusId
           }`
         );
       }
-      if (data.priceMoth && typeof data.priceMoth !== "number") {
-        data.priceMoth = parseFloat(data.priceMoth);
+
+      // Convert prices to numbers if they are provided and not already numbers
+      if (data.priceMonth && typeof data.priceMonth !== "number") {
+        data.priceMonth = parseFloat(data.priceMonth);
       }
       if (data.priceYear && typeof data.priceYear !== "number") {
         data.priceYear = parseFloat(data.priceYear);
@@ -176,24 +205,32 @@ const ServiceController = {
       if (data.priceCommission && typeof data.priceCommission !== "number") {
         data.priceCommission = parseFloat(data.priceCommission);
       }
+
+      // Convert isShare to boolean if it is provided and not already a boolean
       if (data.isShare && typeof data.isShare !== "boolean") {
         data.isShare = data.isShare === "true";
       }
+
+      // Update the service
       const service = await prisma.service.update({
         where: { id },
         data,
       });
+
+      // Clear the cache
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
+      // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} service`, service);
     } catch (error) {
+      // Handle errors
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
     }
   },
-
   async UpdateCoverImage(req, res) {
     try {
       const id = req.params.id;
-      const old_coverImage = req.body;
+      const { old_coverImage } = req.body;
       if (!old_coverImage) {
         return SendError(res, 400, `${EMessage.pleaseInput} old_coverImage`);
       }
@@ -202,7 +239,7 @@ const ServiceController = {
         return SendError(res, 400, `${EMessage.pleaseInput}: coverImage`);
       }
       const serviceExists = await FindServiceById(id);
-      if (serviceExists) {
+      if (!serviceExists) {
         return SendError(
           res,
           404,
@@ -223,6 +260,7 @@ const ServiceController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess} service coverImage`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service coverImage`, error);
@@ -234,6 +272,9 @@ const ServiceController = {
       const id = req.params.id;
       const data = req.files;
       let { oldImages } = req.body;
+      if (!oldImages) {
+        return SendError(res, 400, `${EMessage.pleaseInput}: oldImages`);
+      }
       oldImages = oldImages.split(",");
       if (oldImages.length === 0) {
         return SendError(res, 400, `${EMessage.pleaseInput}: oldImages`);
@@ -253,7 +294,7 @@ const ServiceController = {
         );
       }
       const serviceExists = await FindServiceById(id);
-      if (serviceExists) {
+      if (!serviceExists) {
         return SendError(
           res,
           404,
@@ -261,7 +302,7 @@ const ServiceController = {
         );
       }
       const OldImageList = serviceExists.images;
-      let imagesList = CheckUniqueElement(OldImageList, oldImages);
+      let images_url_List = CheckUniqueElement(OldImageList, oldImages);
       const ImagesPromises = dataImagesToList.map((img, i) =>
         UploadImage(img.data, oldImages[i]).then((url) => {
           if (!url) {
@@ -271,12 +312,13 @@ const ServiceController = {
         })
       );
       const images_url_list = await Promise.all(ImagesPromises);
-      imagesList = imagesList.concat(images_url_list);
+      images_url_List = images_url_List.concat(images_url_list);
       const service = await prisma.service.update({
         where: { id },
-        data: { images: images_url_list },
+        data: { images: images_url_List },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess} service images`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service images`, error);
@@ -285,7 +327,7 @@ const ServiceController = {
   async UpdateIsShare(req, res) {
     try {
       const id = req.params.id;
-      const { isShare } = req.body;
+      let { isShare } = req.body;
       if (!isShare) {
         return SendError(
           res,
@@ -293,9 +335,16 @@ const ServiceController = {
           `${EMessage.pleaseInput}: Share is required`
         );
       }
+      if (isShare && typeof isShare !== "boolean") {
+        isShare = isShare === "true";
+      }
       const serviceExists = await FindServiceById(id);
-      if (serviceExists) {
-        SendError(res, 404, `${EMessage.notFound} service with id:${id}`);
+      if (!serviceExists) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} service with id:${id}`
+        );
       }
       const service = await prisma.service.update({
         where: { id },
@@ -304,6 +353,7 @@ const ServiceController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess} service `, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
@@ -313,8 +363,12 @@ const ServiceController = {
     try {
       const id = req.params.id;
       const serviceExists = await FindServiceById(id);
-      if (serviceExists) {
-        SendError(res, 404, `${EMessage.notFound} service with id:${id}`);
+      if (!serviceExists) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} service with id:${id}`
+        );
       }
       const service = await prisma.service.update({
         where: { id },
@@ -323,6 +377,7 @@ const ServiceController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} service`, error);
@@ -340,8 +395,12 @@ const ServiceController = {
     try {
       const id = req.params.id;
       const service = await FindServiceById(id);
-      if (service) {
-        SendError(res, 404, `${EMessage.notFound} service with id:${id}`);
+      if (!service) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} service with id:${id}`
+        );
       }
       SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
     } catch (error) {

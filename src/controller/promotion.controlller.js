@@ -28,7 +28,7 @@ const PromotionController = {
         );
       }
 
-      let { qty, start_time, end_time } = req.body;
+      let { qty, startTime, endTime } = req.body;
       if (typeof qty !== "number") {
         qty = parseInt(qty, 10);
       }
@@ -38,8 +38,8 @@ const PromotionController = {
         data: {
           qty,
           code,
-          start_time,
-          end_time,
+          startTime,
+          endTime,
         },
       });
       await CacheAndInsertData(cacheKey, model, promotion);
@@ -56,6 +56,12 @@ const PromotionController = {
       if (typeof data.qty !== "number") {
         data.qty = parseInt(data.qty, 10);
       }
+      if (data.isGiven) {
+        data.isGiven =
+          typeof data.isGiven === "boolean"
+            ? data.isGiven
+            : data.isGiven === "true";
+      }
       const promotionExists = await FindPromotionId(id);
       if (!promotionExists) {
         return SendError(
@@ -68,7 +74,9 @@ const PromotionController = {
         where: { id },
         data,
       });
+
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} promotion`, error);
@@ -77,7 +85,7 @@ const PromotionController = {
   async Delete(req, res) {
     try {
       const id = req.params.id;
-      const promotionExists = await FindPaymentBy(id);
+      const promotionExists = await FindPromotionId(id);
       if (!promotionExists) {
         return SendError(
           res,
@@ -92,6 +100,7 @@ const PromotionController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} promotion`, error);
@@ -123,25 +132,29 @@ const PromotionController = {
   },
   async SelectByCode(req, res) {
     try {
-      // await redis.del(cacheKey);
       const code = req.params.code;
-      const cachedData = await redis.get(cacheKey);
-      let promotion;
-      if (!cachedData) {
-        promotion = await prisma.promotion.findFirst({
-          where: {
-            code,
-            isActive: true,
-          },
-        });
-      } else {
-        const dataList = JSON.parse(cachedData);
-        promotion = dataList.find((pro) => pro.code == code);
-      }
+      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const promotion = dataList.find((pro) => pro.code == code);
       if (!promotion) {
         SendError(res, 404, `${EMessage.notFound} promotion with code ${code}`);
         return;
       }
+      SendSuccess(res, `Select code promotion`, promotion);
+    } catch (error) {
+      SendErrorCatch(
+        res,
+        `${EMessage.errorFetchingOne}  status by code`,
+        error
+      );
+    }
+  },
+  async SelectByIsGiven(req, res) {
+    try {
+      let { isGiven } = req.params;
+      if (typeof isGiven !== "boolean") isGiven = isGiven === "true";
+      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, model);
+
+      const promotion = dataList.filter((pro) => pro.isGiven === isGiven);
       SendSuccess(res, `Select code promotion`, promotion);
     } catch (error) {
       SendErrorCatch(

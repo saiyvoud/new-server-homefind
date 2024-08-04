@@ -1,5 +1,5 @@
 import redis from "../Database/radis.js";
-import { EMessage } from "../service/enum";
+import { EMessage } from "../service/enum.js";
 import { FindPaymentById } from "../service/find.js";
 import {
   CacheAndInsertData,
@@ -28,16 +28,16 @@ const PaymentController = {
       const { bankName, accountName, accountNo } = req.body;
 
       const data = req.files;
-      if (!data && !data.qr_image) {
-        return SendError(res, 400, `${EMessage.pleaseInput}: qr_image`);
+      if (!data || !data.qr_Image) {
+        return SendError(res, 400, `${EMessage.pleaseInput}: qr_Image`);
       }
-      const imgUrl = await UploadImage(data.qr_image.data);
+      const imgUrl = await UploadImage(data.qr_Image.data);
       const payment = await prisma.payment.create({
         data: {
           bankName,
           accountNo,
           accountName,
-          qr_image: imgUrl,
+          qr_Image: imgUrl,
         },
       });
       await CacheAndInsertData(cacheKey, model, payment);
@@ -49,10 +49,10 @@ const PaymentController = {
   },
   async Update(req, res) {
     try {
-      const id = req.body.id;
+      const id = req.params.id;
       const data = DataExist(req.body);
-      if (data.status && typeof data.status !== "boolean") {
-        data.status = data.status === "true";
+      if (data.isPublic && typeof data.isPublic !== "boolean") {
+        data.isPublic = data.isPublic === "true";
       }
       const paymentExists = await FindPaymentById(id);
       if (!paymentExists) {
@@ -67,6 +67,7 @@ const PaymentController = {
         data,
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} payment`, error);
@@ -74,14 +75,14 @@ const PaymentController = {
   },
   async UpdateImage(req, res) {
     try {
-      const id = req.body.id;
-      const { old_qr_image } = req.body;
-      if (!old_qr_image) {
-        return SendError(res, 400, `${EMessage.pleaseInput}: old_qr_image`);
+      const id = req.params.id;
+      const { old_qr_Image } = req.body;
+      if (!old_qr_Image) {
+        return SendError(res, 400, `${EMessage.pleaseInput}: old_qr_Image`);
       }
       const data = req.files;
-      if (!data && !data.qr_image) {
-        return SendError(res, 400, `${EMessage.pleaseInput}: qr_image`);
+      if (!data || !data.qr_Image) {
+        return SendError(res, 400, `${EMessage.pleaseInput}: qr_Image`);
       }
       const paymentExists = await FindPaymentById(id);
       if (!paymentExists) {
@@ -91,14 +92,15 @@ const PaymentController = {
           `${EMessage.notFound} payment with id:${id}`
         );
       }
-      const img_url = await UploadImage(data.qr_image.data, old_qr_image);
+      const img_url = await UploadImage(data.qr_Image.data, old_qr_Image);
       const payment = await prisma.payment.update({
         where: { id },
         data: {
-          qr_image: img_url,
+          qr_Image: img_url,
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} payment image`, error);
@@ -106,7 +108,7 @@ const PaymentController = {
   },
   async Delete(req, res) {
     try {
-      const id = req.body.id;
+      const id = req.params.id;
       const paymentExists = await FindPaymentById(id);
       if (!paymentExists) {
         return SendError(
@@ -122,6 +124,7 @@ const PaymentController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} payment`, error);
@@ -137,7 +140,7 @@ const PaymentController = {
   },
   async SelectOne(req, res) {
     try {
-      const id = req.body.id;
+      const id = req.params.id;
       const payment = await FindPaymentById(id);
       if (!payment) {
         return SendError(
@@ -156,7 +159,7 @@ const PaymentController = {
     try {
       const { isPublic } = req.body;
       const data = await CacheAndRetrieveUpdatedData(cacheKey, model);
-      const payment = data.find((item) => item.isPublic === isPublic);
+      const payment = data.filter((item) => item.isPublic === true);
       SendSuccess(res, `${EMessage.selectAllSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(

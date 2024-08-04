@@ -121,17 +121,26 @@ const KYCController = {
       const id = req.params.id;
       let data = DataExist(req.body);
 
+      // Initialize an array to hold the promises
       const kycExistsPromise = [];
 
+      // Add the KYC promise
       const kycPromise = FindKYCById(id);
       kycExistsPromise.push(kycPromise);
 
+      // Add the User promise if userId exists
       if (data.userId) {
         const userPromise = FindUserById(data.userId);
         kycExistsPromise.push(userPromise);
       }
 
-      const [kycExists, userExists] = await Promise.all(kycExistsPromise);
+      // Await all promises
+      const results = await Promise.all(kycExistsPromise);
+
+      // Extract the results based on what was promised
+      const kycExists = results.shift();
+      const userExists = data.userId ? results.shift() : true;
+
       // Handle case where KYC does not exist
       if (!kycExists) {
         return SendError(res, 404, `${EMessage.notFound} KYC with id: ${id}`);
@@ -163,7 +172,11 @@ const KYCController = {
         where: { id },
         data,
       });
+
+      // Clear the cache
       await redis.del(cacheKey);
+
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
@@ -189,6 +202,7 @@ const KYCController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} kyc`, error);
@@ -228,6 +242,7 @@ const KYCController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} profile kyc`, error);
@@ -238,6 +253,9 @@ const KYCController = {
       const id = req.params.id;
       const data = req.files;
       let { oldDocImage } = req.body;
+      if (!oldDocImage) {
+        return SendError(res, 400, `${EMessage.pleaseInput}: oldDocImage`);
+      }
       oldDocImage = oldDocImage.split(",");
       if (oldDocImage.length === 0) {
         return SendError(res, 400, `${EMessage.pleaseInput}: oldDocImage`);
@@ -288,6 +306,7 @@ const KYCController = {
         data: { docImage: docImageList },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} docImage kyc`, error);

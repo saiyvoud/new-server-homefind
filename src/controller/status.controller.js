@@ -11,7 +11,7 @@ import {
 import { DataExist, ValidateStatus } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
 
-const cachedKey = "status";
+const cacheKey = "status";
 const model = "status";
 const StatusController = {
   async Insert(req, res) {
@@ -33,7 +33,7 @@ const StatusController = {
         },
       });
 
-      await CacheAndInsertData(cachedKey, model, status);
+      await CacheAndInsertData(cacheKey, model, status);
 
       SendSuccess(res, `${EMessage.insertSuccess}`, status);
     } catch (error) {
@@ -51,7 +51,8 @@ const StatusController = {
         where: { id: id },
         data: data,
       });
-      await redis.del(cachedKey);
+      await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} status`, error);
@@ -67,7 +68,8 @@ const StatusController = {
         where: { id },
         data: { isActive: false },
       });
-      await redis.del(cachedKey);
+      await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, `${EMessage.deleteSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} status`, error);
@@ -75,8 +77,7 @@ const StatusController = {
   },
   async SelectAll(req, res) {
     try {
-     
-      const status = await CacheAndRetrieveUpdatedData(cachedKey, model);
+      const status = await CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, `${EMessage.fetchAllSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} status`, error);

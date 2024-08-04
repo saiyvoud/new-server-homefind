@@ -2,8 +2,10 @@ import redis from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindCategoryById } from "../service/find.js";
 import {
+  CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
   SendCreate,
+  SendError,
   SendErrorCatch,
 } from "../service/service.js";
 import { UploadImage } from "../service/uploadImage.js";
@@ -19,18 +21,19 @@ const CategoryController = {
       const { title } = req.body;
       const data = req.files;
 
-      if (!validate)
-        if (validate.length > 0) {
-          return SendError(
-            res,
-            400,
-            `${EMessage.pleaseInput}: ${validate.join(", ")}`
-          );
-        }
+      if (validate.length > 0) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${validate.join(", ")}`
+        );
+      }
 
-      if (!data) return SendError(res, 400, `${EMessage.pleaseInput}: image}`);
+      if (!data || !data.icon) {
+        return SendError(res, 400, `${EMessage.pleaseInput}: icon is required`);
+      }
 
-      const img_url = await UploadImage(data.image.data);
+      const img_url = await UploadImage(data.icon.data);
       const category = await prisma.category.create({
         data: {
           title,
@@ -57,6 +60,7 @@ const CategoryController = {
         data,
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -65,12 +69,18 @@ const CategoryController = {
   async UpdateImage(req, res) {
     try {
       const id = req.params.id;
+      const { oldIcon } = req.body;
       const data = req.files;
-      if (!data) return SendError(res, 400, `${EMessage.pleaseInput}: image}`);
+
+      if (!oldIcon) {
+        return SendError(res, 400, `${EMessage.pleaseInput}: oldIcon`);
+      }
+      if (!data || !data.icon)
+        return SendError(res, 400, `${EMessage.pleaseInput}: icon`);
       const categoryExists = await FindCategoryById(id);
       if (!categoryExists)
         return SendError(res, 404, `${EMessage.notFound} category by id ${id}`);
-      const img_url = await UploadImage(data.image.data);
+      const img_url = await UploadImage(data.icon.data, oldIcon);
       const category = await prisma.category.update({
         where: {
           id,
@@ -80,6 +90,7 @@ const CategoryController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -100,6 +111,7 @@ const CategoryController = {
         },
       });
       await redis.del(cacheKey);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendCreate(res, `${EMessage.deleteSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed}`, error);
@@ -116,8 +128,8 @@ const CategoryController = {
   async SelectOne(req, res) {
     try {
       const id = req.params.id;
-      const categoryExists = await FindCategoryById(id);
-      if (!categoryExists)
+      const category = await FindCategoryById(id);
+      if (!category)
         return SendError(res, 404, `${EMessage.notFound} category by id ${id}`);
       return SendCreate(res, `${EMessage.fetchOneSuccess}`, category);
     } catch (error) {

@@ -1,15 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "mysql" // or "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -26,8 +20,8 @@ enum StatusType {
 }
 
 model User {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive     Boolean   @default(true) @db.Bool
+  id           String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive     Boolean   @default(true) @db.Boolean
   username     String
   phoneNumber  String
   email        String
@@ -50,9 +44,9 @@ model User {
 }
 
 model Kyc {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive  Boolean  @default(true) @db.Bool
-  userId    String   @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive  Boolean  @default(true) @db.Boolean
+  userId    String   @db.Uuid
   firstname String
   lastname  String
   age       Int
@@ -69,14 +63,14 @@ model Kyc {
 }
 
 model Order {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  isActive     Boolean    @default(true) @db.Bool
-  userId       String     @db.ObjectId
-  serviceId    String     @db.ObjectId
-  promotionId  String?    @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.Uuid
+  isActive     Boolean    @default(true) @db.Boolean
+  userId       String     @db.Uuid
+  serviceId    String     @db.Uuid
+  promotionId  String?    @db.Uuid
   bookingPrice Float
   totalPrice   Float
-  paymentId    String     @db.ObjectId
+  paymentId    String     @db.Uuid
   billQR       String
   status       StatusType @default(padding)
   user         User       @relation(fields: [userId], references: [id])
@@ -89,23 +83,23 @@ model Order {
 }
 
 model Banner {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive  Boolean  @default(true) @db.Bool
+  id        String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive  Boolean  @default(true) @db.Boolean
   image     String
   link_url  String
-  isPublice Boolean  @default(true) @db.Bool
+  isPublice Boolean  @default(true) @db.Boolean
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
 }
 
 model Promotion {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive  Boolean  @default(true)
+  id        String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive  Boolean  @default(true) @db.Boolean
   qty       Int
   code      String
   startTime DateTime
   endTime   DateTime
-  isGiven   Boolean  @default(true) @db.Bool
+  isGiven   Boolean  @default(true) @db.Boolean
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
   Wallet    Wallet[]
@@ -113,23 +107,23 @@ model Promotion {
 }
 
 model Payment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive    Boolean  @default(true) @db.Bool
+  id          String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive    Boolean  @default(true) @db.Boolean
   bankName    String
   accountName String
   accountNo   String
   qr_Image    String
-  isPublic    Boolean  @default(true) @db.Bool
+  isPublic    Boolean  @default(true) @db.Boolean
   createAt    DateTime @default(now())
   updateAt    DateTime @updatedAt
   Order       Order[]
 }
 
 model Review {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
-  userId   String   @db.ObjectId
-  orderId  String   @db.ObjectId
+  id       String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean  @default(true) @db.Boolean
+  userId   String   @db.Uuid
+  orderId  String   @db.Uuid
   reason   String
   star     Float
   user     User     @relation(fields: [userId], references: [id])
@@ -139,10 +133,10 @@ model Review {
 }
 
 model Service {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive        Boolean  @default(true) @db.Bool
-  posterId        String   @db.ObjectId
-  categoryId      String   @db.ObjectId
+  id              String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive        Boolean  @default(true) @db.Boolean
+  posterId        String   @db.Uuid
+  categoryId      String   @db.Uuid
   name            String
   village         String
   district        String
@@ -153,7 +147,7 @@ model Service {
   detail          String
   isShare         Boolean
   view            Int      @default(1)
-  statusId        String   @db.ObjectId
+  statusId        String   @db.Uuid
   coverImage      String
   images          String[]
   user            User     @relation(fields: [posterId], references: [id])
@@ -165,8 +159,8 @@ model Service {
 }
 
 model Status {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean   @default(true) @db.Bool
+  id       String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean   @default(true) @db.Boolean
   name     String
   createAt DateTime  @default(now())
   updateAt DateTime  @updatedAt
@@ -174,8 +168,8 @@ model Status {
 }
 
 model Category {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean   @default(true) @db.Bool
+  id       String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean   @default(true) @db.Boolean
   title    String
   icon     String
   createAt DateTime  @default(now())
@@ -184,10 +178,10 @@ model Category {
 }
 
 model Wallet {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive    Boolean   @default(true) @db.Bool
-  userId      String    @db.ObjectId
-  promotionId String    @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive    Boolean   @default(true) @db.Boolean
+  userId      String    @db.Uuid
+  promotionId String    @db.Uuid
   status      Boolean   @default(true)
   user        User      @relation(fields: [userId], references: [id])
   promotion   Promotion @relation(fields: [promotionId], references: [id])
@@ -195,11 +189,9 @@ model Wallet {
   updateAt    DateTime  @updatedAt
 }
 
-
-
 model Notification {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
+  id       String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean  @default(true) @db.Boolean
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
