@@ -24,7 +24,6 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "prisma": "^5.17.0",
-    "redis": "^4.7.0",
     "shortid": "^2.2.16"
   },
   "devDependencies": {
