@@ -3,6 +3,8 @@ services:
   app:
     build: .
     container_name: my-node-app
+    command: >
+      sh -c "npx prisma generate && npm start"
     ports:
       - "81:81" # Correct format for a list
     env_file:
