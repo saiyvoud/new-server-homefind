@@ -14,7 +14,7 @@ services:
       - app_networks
 
   redis:
-    image: redis:alpine
+    image: redis:7.4.0
     container_name: redis_server
     ports:
       - "6379:6379"

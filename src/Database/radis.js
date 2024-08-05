@@ -4,7 +4,7 @@ const redis = new Redis({
   host:REDIS_HOST || 'redis',
   port: REDIS_PORT || 6379,
   retryStrategy: (times) => {
-    const delay = Math.min(times * 50, 2000); // Retry with an exponential backoff
+    const delay = Math.min(times * 50, 10000); // Retry with an exponential backoff
     return delay;
   },
 });
