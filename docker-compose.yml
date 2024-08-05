@@ -3,14 +3,13 @@ services:
   app:
     build: .
     container_name: my-node-app
-    # command: >
-    #   sh -c "npx prisma generate && npm start"
     ports:
-      - "81:81" # Correct format for a list
+      - "81:81"
     env_file:
       - .env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     networks:
       - app_networks
 
@@ -18,11 +17,16 @@ services:
     image: redis:alpine
     container_name: redis_server
     ports:
-      - "6379:6379" # Correct format for a list
+      - "6379:6379"
     networks:
       - app_networks
     volumes:
-      - redis_data:/data # Correct format for a list
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   app_networks:
