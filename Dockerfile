@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:14 as build
+FROM node:18.20.4 as build
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN npm install --production
 COPY . .
 
 # Stage 2: Production
-FROM node:18-alpine
+FROM node:18.20.4
 
 WORKDIR /app
 
