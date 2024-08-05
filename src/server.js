@@ -53,7 +53,7 @@ const checkDatabaseConnection = async () => {
   }
 };
 
-await redis.del("promotions");
+await redis.del("services");
 
 // const user = await redis.get("users");
 // console.log('user :>> ', user);

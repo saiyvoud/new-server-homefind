@@ -1,36 +1,30 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql" // or "postgresql"
   url      = env("DATABASE_URL")
 }
 
 enum UserType {
   user
   admin
-  supperadmin
+  superadmin
 }
 
 enum StatusType {
-  padding
+  pending
   success
-  cancle
+  cancel
 }
 
 model User {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive     Boolean   @default(true) @db.Bool
-  username     String
-  phoneNumber  String
-  email        String
+  id           String    @id @default(uuid()) @db.VarChar(36)
+  isActive     Boolean   @default(true)
+  username     String    @unique
+  phoneNumber  String    @unique
+  email        String    @unique
   password     String
   profile      String    @default("")
   kyc          Boolean   @default(false)
@@ -43,16 +37,12 @@ model User {
   Review       Review[]
   Service      Service[]
   Order        Order[]
-
-  @@index([username])
-  @@index([phoneNumber])
-  @@index([email])
 }
 
 model Kyc {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive  Boolean  @default(true) @db.Bool
-  userId    String   @db.ObjectId
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  isActive  Boolean  @default(true)
+  userId    String   @db.VarChar(36)
   firstname String
   lastname  String
   age       Int
@@ -63,49 +53,49 @@ model Kyc {
   docNo     String
   docImage  String[]
   profile   String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
 }
 
 model Order {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  isActive     Boolean    @default(true) @db.Bool
-  userId       String     @db.ObjectId
-  serviceId    String     @db.ObjectId
-  promotionId  String?    @db.ObjectId
+  id           String     @id @default(uuid()) @db.VarChar(36)
+  isActive     Boolean    @default(true)
+  userId       String     @db.VarChar(36)
+  serviceId    String     @db.VarChar(36)
+  promotionId  String?    @db.VarChar(36)
   bookingPrice Float
   totalPrice   Float
-  paymentId    String     @db.ObjectId
+  paymentId    String     @db.VarChar(36)
   billQR       String
-  status       StatusType @default(padding)
-  user         User       @relation(fields: [userId], references: [id])
-  promotion    Promotion? @relation(fields: [promotionId], references: [id])
-  service      Service    @relation(fields: [serviceId], references: [id])
-  payment      Payment    @relation(fields: [paymentId], references: [id])
+  status       StatusType @default(pending)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promotion    Promotion? @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+  service      Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  payment      Payment    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   createAt     DateTime   @default(now())
   updateAt     DateTime   @updatedAt
   Review       Review[]
 }
 
 model Banner {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive  Boolean  @default(true) @db.Bool
-  image     String
-  link_url  String
-  isPublice Boolean  @default(true) @db.Bool
-  createAt  DateTime @default(now())
-  updateAt  DateTime @updatedAt
+  id       String   @id @default(uuid()) @db.VarChar(36)
+  isActive Boolean  @default(true)
+  image    String
+  link_url String
+  isPublic Boolean  @default(true)
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 }
 
 model Promotion {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid()) @db.VarChar(36)
   isActive  Boolean  @default(true)
   qty       Int
-  code      String
+  code      String   @unique
   startTime DateTime
   endTime   DateTime
-  isGiven   Boolean  @default(true) @db.Bool
+  isGiven   Boolean  @default(true)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
   Wallet    Wallet[]
@@ -113,36 +103,36 @@ model Promotion {
 }
 
 model Payment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive    Boolean  @default(true) @db.Bool
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  isActive    Boolean  @default(true)
   bankName    String
   accountName String
   accountNo   String
   qr_Image    String
-  isPublic    Boolean  @default(true) @db.Bool
+  isPublic    Boolean  @default(true)
   createAt    DateTime @default(now())
   updateAt    DateTime @updatedAt
   Order       Order[]
 }
 
 model Review {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
-  userId   String   @db.ObjectId
-  orderId  String   @db.ObjectId
+  id       String   @id @default(uuid()) @db.VarChar(36)
+  isActive Boolean  @default(true)
+  userId   String   @db.VarChar(36)
+  orderId  String   @db.VarChar(36)
   reason   String
   star     Float
-  user     User     @relation(fields: [userId], references: [id])
-  order    Order    @relation(fields: [orderId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }
 
 model Service {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive        Boolean  @default(true) @db.Bool
-  posterId        String   @db.ObjectId
-  categoryId      String   @db.ObjectId
+  id              String   @id @default(uuid()) @db.VarChar(36)
+  isActive        Boolean  @default(true)
+  posterId        String   @db.VarChar(36)
+  categoryId      String   @db.VarChar(36)
   name            String
   village         String
   district        String
@@ -153,20 +143,20 @@ model Service {
   detail          String
   isShare         Boolean
   view            Int      @default(1)
-  statusId        String   @db.ObjectId
+  statusId        String   @db.VarChar(36)
   coverImage      String
   images          String[]
-  user            User     @relation(fields: [posterId], references: [id])
-  category        Category @relation(fields: [categoryId], references: [id])
-  status          Status   @relation(fields: [statusId], references: [id])
+  user            User     @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  status          Status   @relation(fields: [statusId], references: [id], onDelete: Cascade)
   createAt        DateTime @default(now())
   updateAt        DateTime @updatedAt
   Order           Order[]
 }
 
 model Status {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean   @default(true) @db.Bool
+  id       String    @id @default(uuid()) @db.VarChar(36)
+  isActive Boolean   @default(true)
   name     String
   createAt DateTime  @default(now())
   updateAt DateTime  @updatedAt
@@ -174,8 +164,8 @@ model Status {
 }
 
 model Category {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean   @default(true) @db.Bool
+  id       String    @id @default(uuid()) @db.VarChar(36)
+  isActive Boolean   @default(true)
   title    String
   icon     String
   createAt DateTime  @default(now())
@@ -184,22 +174,22 @@ model Category {
 }
 
 model Wallet {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  isActive    Boolean   @default(true) @db.Bool
-  userId      String    @db.ObjectId
-  promotionId String    @db.ObjectId
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  isActive    Boolean   @default(true)
+  userId      String    @db.VarChar(36)
+  promotionId String    @db.VarChar(36)
   status      Boolean   @default(true)
-  user        User      @relation(fields: [userId], references: [id])
-  promotion   Promotion @relation(fields: [promotionId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
   createAt    DateTime  @default(now())
   updateAt    DateTime  @updatedAt
+
+  @@unique([userId, promotionId])
 }
 
-
-
 model Notification {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  isActive Boolean  @default(true) @db.Bool
+  id       String   @id @default(uuid()) @db.VarChar(36)
+  isActive Boolean  @default(true)
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 }

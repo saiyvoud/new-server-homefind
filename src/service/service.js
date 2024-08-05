@@ -68,7 +68,7 @@ export const CacheAndInsertDataUser = async (cacheKey, newData) => {
   }
 };
 
-export const CacheAndInsertData = async (cacheKey, model, newData) => {
+export const CacheAndInsertData = async (cacheKey, model, newData, select) => {
   try {
     const cachedData = await redis.get(cacheKey);
     let data;
@@ -77,6 +77,7 @@ export const CacheAndInsertData = async (cacheKey, model, newData) => {
       data = await prisma[model].findMany({
         where: { isActive: true },
         orderBy: { createAt: "desc" },
+        select,
       });
 
       await redis.set(cacheKey, JSON.stringify(data), "EX", 3600);

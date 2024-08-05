@@ -19,8 +19,39 @@ import {
 import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateOrder } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
-const cacheKey = "orders";
+let cacheKey = "orders";
 const model = "order";
+const select = {
+  id: true,
+  userId: true,
+  serviceId: true,
+  paymentId: true,
+  promotionId: true,
+  bookingPrice: true,
+  totalPrice: true,
+  billQR: true,
+  createAt: true,
+  updateAt: true,
+  service: {
+    select: {
+      coverImage: true,
+      view: true,
+      category: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  },
+  promotion: {
+    select: {
+      code: true,
+      qty: true,
+      startTime: true,
+      endTime: true,
+    },
+  },
+};
 const OrderController = {
   async Insert(req, res) {
     try {
@@ -117,10 +148,12 @@ const OrderController = {
           totalPrice,
           billQR: img_url,
         },
+        select,
       });
 
       // Cache the order and send a success response
-      CacheAndInsertData(cacheKey, model, order);
+      await redis.del(cacheKey + userId);
+      CacheAndInsertData(cacheKey, model, order, select);
       SendCreate(res, `${EMessage.insertSuccess}`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.insertFailed} order`, error);
@@ -238,8 +271,8 @@ const OrderController = {
       });
 
       // Clear the cache
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
@@ -267,12 +300,13 @@ const OrderController = {
       if (!orderExists) {
         SendError(res, 404, `${EMessage.notFound} order with id ${id}`);
       }
+
       const order = await prisma.order.update({
         where: { id },
         data: { status },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order  status`, error);
@@ -308,8 +342,8 @@ const OrderController = {
         where: { id },
         data: { billQR: img_url },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order billQR`, error);
@@ -326,8 +360,8 @@ const OrderController = {
         where: { id },
         data: { isActive: false },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.deleteSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} order`, error);
@@ -348,11 +382,26 @@ const OrderController = {
   },
   async SelectAll(req, res) {
     try {
-      const order = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const order = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.fetchAllSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} order`, error);
     }
   },
+  async SelectByUserId(req, res) {
+    try {
+      const userId = req.params.userId;
+
+      const order = await CacheAndRetrieveUpdatedData(
+        cacheKey + userId,
+        model,
+        select
+      );
+      SendSuccess(res, `${EMessage.fetchAllSuccess} order by userId `, order);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.errorFetchingAll} order by userId`, error);
+    }
+  },
 };
+
 export default OrderController;

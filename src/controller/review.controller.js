@@ -10,13 +10,28 @@ import {
   CacheAndRetrieveUpdatedData,
   SendCreate,
   SendError,
-  SendErrorCatch,
-  SendSuccess,
+ SendErrorCatch,
+SendSuccess,
 } from "../service/service.js";
 import { DataExist, ValidateReview } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
 const cacheKey = "reviews";
 const model = "review";
+const select = {
+  id: true,
+  userId: true,
+  orderId: true,
+  reason: true,
+  star: true,
+  createAt: true,
+  updateAt: true,
+  user: {
+    select: {
+      username: true,
+      phoneNumber: true,
+    },
+  },
+};
 const ReviewController = {
   async Insert(req, res) {
     try {
@@ -49,11 +64,12 @@ const ReviewController = {
           reason,
           star,
         },
+        select,
       });
-      CacheAndInsertData(cacheKey, model, review);
-      SendCreate(res, `${EMessage.insertSuccess}`, review);
+      CacheAndInsertData(cacheKey, model, review, select);
+     return SendCreate(res, `${EMessage.insertSuccess}`, review);
     } catch (error) {
-      SendErrorCatch(res, `${EMessage.insertFailed} review`, error);
+     return SendErrorCatch(res, `${EMessage.insertFailed} review`, error);
     }
   },
 
@@ -110,12 +126,12 @@ const ReviewController = {
       });
 
       await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       // ส่ง response ที่สำเร็จ
-      SendSuccess(res, `${EMessage.updateSuccess}`, review);
+     return SendSuccess(res, `${EMessage.updateSuccess}`, review);
     } catch (error) {
       // จัดการข้อผิดพลาด
-      SendErrorCatch(res, `${EMessage.updateFailed} review`, error);
+     return SendErrorCatch(res, `${EMessage.updateFailed} review`, error);
     }
   },
   async Delete(req, res) {
@@ -123,7 +139,7 @@ const ReviewController = {
       const id = req.params.id;
       const reviewExists = await FindReviewById(id);
       if (!reviewExists) {
-        SendError(res, 404, `${EMessage.notFound} review with id ${id}`);
+        return SendError(res, 404, `${EMessage.notFound} review with id ${id}`);
       }
       const review = await prisma.review.update({
         where: { id },
@@ -132,18 +148,18 @@ const ReviewController = {
         },
       });
       await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
-      SendSuccess(res, `${EMessage.deleteSuccess}`, review);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+     return SendSuccess(res, `${EMessage.deleteSuccess}`, review);
     } catch (error) {
-      SendErrorCatch(res, `${EMessage.deleteFailed} review`, error);
+     return SendErrorCatch(res, `${EMessage.deleteFailed} review`, error);
     }
   },
   async SelectAll(req, res) {
     try {
-      const review = await CacheAndRetrieveUpdatedData(cacheKey, model);
-      SendSuccess(res, `${EMessage.fetchAllSuccess}`, review);
+      const review = await  CacheAndRetrieveUpdatedData(cacheKey, model, select);
+     return SendSuccess(res, `${EMessage.fetchAllSuccess}`, review);
     } catch (error) {
-      SendErrorCatch(res, `${EMessage.errorFetchingAll} review`, error);
+     return SendErrorCatch(res, `${EMessage.errorFetchingAll} review`, error);
     }
   },
   async SelectOne(req, res) {
@@ -151,11 +167,11 @@ const ReviewController = {
       const id = req.params.id;
       const review = await FindReviewById(id);
       if (!review) {
-        SendError(res, 404, `${EMessage.notFound} review with id ${id}`);
+       return SendError(res, 404, `${EMessage.notFound} review with id ${id}`);
       }
-      SendSuccess(res, `${EMessage.fetchOneSuccess}`, review);
+     return SendSuccess(res, `${EMessage.fetchOneSuccess}`, review);
     } catch (error) {
-      SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
+     return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
     }
   },
 };

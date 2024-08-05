@@ -17,8 +17,42 @@ import {
 import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateService } from "../service/validate.js";
 import prisma from "../util/Prisma.js";
-const cacheKey = "services";
+let cacheKey = "services";
 const model = "service";
+const select = {
+  id: true,
+  posterId: true,
+  // categoryId: true,
+  // statusId: true,
+  // user:{}
+  name: true,
+  village: true,
+  district: true,
+  province: true,
+  priceMonth: true,
+  priceYear: true,
+  priceCommission: true,
+  detail: true,
+  isShare: true,
+  images: true,
+  coverImage: true,
+  createAt: true,
+  updateAt: true,
+  user: {
+    select: {
+      username: true,
+      phoneNumber: true,
+    },
+  },
+  category: {
+    select: { title: true, icon: true },
+  },
+  status: {
+    select: {
+      name: true,
+    },
+  },
+};
 const ServiceController = {
   async Insert(req, res) {
     try {
@@ -124,8 +158,123 @@ const ServiceController = {
           images: images_url_list,
           coverImage: coverImage_url,
         },
+        select,
       });
-      await CacheAndInsertData(cacheKey, model, service);
+      await redis.del(cacheKey + userId);
+      await CacheAndInsertData(cacheKey, model, service, select);
+      SendSuccess(res, `${EMessage.insertSuccess} service`, service);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.insertFailed} service`, error);
+    }
+  },
+   async Insert(req, res) {
+    try {
+      const validate = ValidateService(req.body);
+      if (validate.length > 0) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput} ${validate.join(", ")}`
+        );
+      }
+      let {
+        posterId,
+        categoryId,
+        name,
+        village,
+        district,
+        province,
+        priceMonth,
+        priceYear,
+        priceCommission,
+        detail,
+        isShare,
+        statusId,
+      } = req.body;
+      const data = req.files;
+      if (!data || !data.images || !data.coverImage) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${
+            !data
+              ? "images, coverImage"
+              : !data.images
+              ? "images"
+              : "coverImage"
+          }`
+        );
+      }
+      if (typeof priceMonth !== "number") {
+        priceMonth = parseFloat(priceMonth);
+      }
+      if (typeof priceYear !== "number") {
+        priceYear = parseFloat(priceYear);
+      }
+      if (typeof priceCommission !== "number") {
+        priceCommission = parseFloat(priceCommission);
+      }
+      if (typeof isShare !== "boolean") {
+        isShare = isShare === "true";
+      }
+      const [userExists, categoryExists, statsExists] = await Promise.all([
+        FindUserById(posterId),
+        FindCategoryById(categoryId),
+        FindStatusById(statusId),
+      ]);
+      if (!userExists || !statsExists || !categoryExists) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} ${
+            !userExists ? "user" : !categoryExists ? "category" : "status"
+          } with id:${
+            !userExists ? posterId : !categoryExists ? categoryId : statusId
+          }`
+        );
+      }
+      const ImagesPromise = data.images.map((img) =>
+        UploadImage(img.data).then((url) => {
+          if (!url) {
+            throw new Error("Upload Image failed");
+          }
+          return url;
+        })
+      );
+      const CoverImagePromise = UploadImage(data.coverImage.data).then(
+        (url) => {
+          if (!url) {
+            throw new Error("Upload Image failed");
+          }
+          return url;
+        }
+      );
+
+      const [coverImage_url, images_url_list] = await Promise.all([
+        CoverImagePromise,
+        Promise.all(ImagesPromise),
+      ]);
+      const service = await prisma.service.create({
+        data: {
+          posterId,
+          categoryId,
+          name,
+          village,
+          district,
+          province,
+          priceMonth,
+          priceYear,
+          priceCommission,
+          detail,
+          isShare,
+          statusId,
+          images: images_url_list,
+          coverImage: coverImage_url,
+        },
+        select,
+      });
+      await redis.del(cacheKey + posterId);
+      await CacheAndInsertData(cacheKey, model, service, select);
       SendSuccess(res, `${EMessage.insertSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.insertFailed} service`, error);
@@ -218,8 +367,8 @@ const ServiceController = {
       });
 
       // Clear the cache
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} service`, service);
     } catch (error) {
@@ -259,8 +408,8 @@ const ServiceController = {
           coverImage: coverImage_url,
         },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} service coverImage`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service coverImage`, error);
@@ -317,8 +466,8 @@ const ServiceController = {
         where: { id },
         data: { images: images_url_List },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} service images`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service images`, error);
@@ -352,8 +501,8 @@ const ServiceController = {
           isShare,
         },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} service `, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
@@ -376,8 +525,8 @@ const ServiceController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} service`, error);
@@ -385,7 +534,11 @@ const ServiceController = {
   },
   async SelectAll(req, res) {
     try {
-      const service = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const service = await CacheAndRetrieveUpdatedData(
+        cacheKey,
+        model,
+        select
+      );
       SendSuccess(res, `${EMessage.selectAllSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} service`, error);
@@ -405,6 +558,27 @@ const ServiceController = {
       SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingOne} service`, error);
+    }
+  },
+  async SelectByUserId(req, res) {
+    try {
+      const userId = req.params.userId;
+      const service = await CacheAndRetrieveUpdatedData(
+        cacheKey + userId,
+        model,
+        select
+      );
+      SendSuccess(
+        res,
+        `${EMessage.selectAllSuccess} service by userId`,
+        service
+      );
+    } catch (error) {
+      SendErrorCatch(
+        res,
+        `${EMessage.errorFetchingAll} service by userId`,
+        error
+      );
     }
   },
 };
