@@ -11,7 +11,7 @@ import {
 } from "../service/service.js";
 import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidatePayment } from "../service/validate.js";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 const cacheKey = "payments";
 const model = "payment";
 const PaymentController = {

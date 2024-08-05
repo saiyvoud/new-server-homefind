@@ -14,9 +14,24 @@ import {
   SendSuccess,
 } from "../service/service.js";
 import { DataExist, ValidateWallet } from "../service/validate.js";
-import prisma from "../util/Prisma.js";
-const cacheKey = "wallets";
+import prisma from "../util/prismaClient.js";
+let cacheKey = "wallets";
 const model = "wallet";
+let select = {
+  id: true,
+  userId: true,
+  promotionId: true,
+  createAt: true,
+  updateAt: true,
+  status: true,
+  promotion: {
+    select: {
+      qty: true,
+      code: true,
+      isGiven: true,
+    },
+  },
+};
 const WalletController = {
   async Insert(req, res) {
     try {
@@ -48,7 +63,9 @@ const WalletController = {
           userId,
           promotionId,
         },
+        select,
       });
+      await redis.del(cacheKey + walletExists.userId);
       await CacheAndInsertData(cacheKey, model, wallet);
       SendCreate(res, `${EMessage.insertSuccess} wallet`, wallet);
     } catch (error) {
@@ -101,8 +118,8 @@ const WalletController = {
       });
 
       // Clear the cache
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + walletExists.userId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
 
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess}`, wallet);
@@ -126,8 +143,8 @@ const WalletController = {
         where: { id },
         data: { isActive: false },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await redis.del(cacheKey, cacheKey + walletExists.userId);
+      CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, wallet);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} wallet`, error);
@@ -135,7 +152,7 @@ const WalletController = {
   },
   async SelectAll(req, res) {
     try {
-      const wallet = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const wallet = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.fetchAllSuccess}`, wallet);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} wallet`, error);
@@ -160,17 +177,11 @@ const WalletController = {
   async SelectByUserId(req, res) {
     try {
       const userId = req.body;
-      const wallet = await prisma.wallet.findMany({
-        where: { userId, isActive: true, status: true },
-        orderBy: { createAt: "desc" },
-      });
-      if (!wallet) {
-        return SendError(
-          res,
-          404,
-          `${EMessage.notFound} wallet with userId: ${id}`
-        );
-      }
+      const wallet = await CacheAndRetrieveUpdatedData(
+        cacheKey + userId,
+        model,
+        select
+      );
       SendSuccess(res, `${EMessage.fetchOneSuccess}`, wallet);
     } catch (error) {
       SendErrorCatch(

@@ -6,9 +6,9 @@ import {
   VerifyToken,
 } from "../service/service.js";
 import { EMessage } from "../service/enum.js";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 
-import CryptoJS from "crypto-js";
+
 export const auth = async (req, res, next) => {
   try {
     const authorization = req.headers["authorization"];

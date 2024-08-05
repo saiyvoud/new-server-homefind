@@ -2,7 +2,8 @@ import express from "express";
 import morgan from "morgan";
 import fileUpload from "express-fileupload";
 import { EAPI, SERVER_PORT } from "./config/api.config.js";
-import prisma from "./util/Prisma.js";
+import prisma from "../src/util/prismaClient.js";
+
 import APIRouter from "./router/index.router.js";
 import redis from "./Database/radis.js";
 
@@ -53,7 +54,7 @@ const checkDatabaseConnection = async () => {
   }
 };
 
-await redis.del("services");
+// await redis.del("services");
 
 // const user = await redis.get("users");
 // console.log('user :>> ', user);

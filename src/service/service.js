@@ -1,7 +1,7 @@
 import CryptoJS from "crypto-js";
 import { SECRET_KEY } from "../config/api.config.js";
 import jwt from "jsonwebtoken";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 import { generateJWTtoken } from "../config/GenerateToken.js";
 import redis from "../Database/radis.js";
 import { FindUserById, FindUserByIdShowPassword } from "./find.js";

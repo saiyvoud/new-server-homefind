@@ -8,7 +8,7 @@ import {
   SendSuccess,
 } from "../service/service.js";
 import shortid from "shortid";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 import redis from "../Database/radis.js";
 import { DataExist, ValidatePromotion } from "../service/validate.js";
 import { FindPromotionId } from "../service/find.js";

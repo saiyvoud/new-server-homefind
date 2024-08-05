@@ -12,7 +12,7 @@ import {
 } from "../service/service.js";
 import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateKYC } from "../service/validate.js";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 
 let cacheKey = "kycs";
 let model = "kyc";

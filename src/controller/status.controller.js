@@ -9,7 +9,7 @@ import {
   SendSuccess,
 } from "../service/service.js";
 import { DataExist, ValidateStatus } from "../service/validate.js";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 
 const cacheKey = "status";
 const model = "status";

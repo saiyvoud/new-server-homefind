@@ -1,5 +1,5 @@
 import redis from "../Database/radis.js";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 import { CacheAndRetrieveUpdatedData } from "./service.js";
 
 // Generic function to find a single record

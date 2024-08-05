@@ -18,7 +18,7 @@ import {
 } from "../service/service.js";
 import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateOrder } from "../service/validate.js";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 let cacheKey = "orders";
 const model = "order";
 const select = {

@@ -24,7 +24,7 @@ import {
   ValidateLoginEmail,
   ValidateUser,
 } from "../service/validate.js";
-import prisma from "../util/Prisma.js";
+import prisma from "../util/prismaClient.js";
 import redis from "../Database/radis.js";
 import { generateJWTtoken } from "../config/GenerateToken.js";
 import { KLimit, SECRET_KEY } from "../config/api.config.js";
