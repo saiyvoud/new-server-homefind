@@ -1,4 +1,4 @@
-import { StatusType } from "@prisma/client";
+import { StatusType } from "../service/enum.js";
 import redis from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import {
