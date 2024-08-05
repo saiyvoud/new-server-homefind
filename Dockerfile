@@ -1,15 +1,16 @@
 # Stage 1: Build
-FROM node:18.20.4 as build
+FROM node:20.10.0 as build
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install --production
 
+RUN npx prisma generate
 COPY . .
 
 # Stage 2: Production
-FROM node:18.20.4
+FROM node:20.10.0
 
 WORKDIR /app
 
