@@ -1,5 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
+
+const REDIS_HOST = process.env.REDIS_HOST;
+const REDIS_PORT = process.env.REDIS_PORT;
+
 const KLimit = 20;
 const EAPI = process.env.EAPI;
 const SERVER_PORT = process.env.SERVER_PORT;
@@ -25,4 +29,6 @@ export {
   CLOUDINARY_NAME,
   CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET,
+  REDIS_HOST,
+  REDIS_PORT,
 };
