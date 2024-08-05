@@ -1,14 +1,10 @@
-
 version: '3.9'
-
 services:
-  app:    
-    build: 
-      dockerfile: Dockerfile
-      context: .
-    container_name: Node_Homefind
+  app:
+    build: .
+    container_name: my-node-app
     ports:
-      -"81:81"
+      - "81:81" # Correct format for a list
     env_file:
       - .env
     depends_on:
@@ -20,13 +16,15 @@ services:
     image: redis:alpine
     container_name: redis_server
     ports:
-      -"6379:6379"
+      - "6379:6379" # Correct format for a list
     networks:
       - app_networks
     volumes:
-      -redis_data:/data
+      - redis_data:/data # Correct format for a list
+
 networks:
   app_networks:
     driver: bridge
+
 volumes:
   redis_data:
