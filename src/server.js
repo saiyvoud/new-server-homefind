@@ -5,20 +5,9 @@ import { EAPI, SERVER_PORT } from "./config/api.config.js";
 import prisma from "../src/util/prismaClient.js";
 
 import APIRouter from "./router/index.router.js";
-import redis from "./Database/radis.js";
+import client from "./Database/radis.js";
 
 // Redis event listeners
-redis.on("connect", () => {
-  console.log("Connected to Redis");
-});
-
-redis.on("error", (err) => {
-  console.error("Redis error:", err);
-});
-
-redis.on("reconnecting", () => {
-  console.log("Reconnecting to Redis...");
-});
 
 const app = express();
 
@@ -54,7 +43,14 @@ const checkDatabaseConnection = async () => {
   }
 };
 
-// await redis.del("services");
+client.on("error", (err) => {
+  console.error("Redis error:", err);
+});
+(async () => {
+  await client.connect();
+})();
+
+// await client.del("users");
 
 // const user = await redis.get("users");
 // console.log('user :>> ', user);
@@ -64,4 +60,5 @@ app.listen(SERVER_PORT, () => {
   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);
   console.log(`Server Already: ${SERVER_PORT}`);
   checkDatabaseConnection();
+ 
 });

@@ -25,13 +25,25 @@ import {
   ValidateUser,
 } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { generateJWTtoken } from "../config/GenerateToken.js";
 import { KLimit, SECRET_KEY } from "../config/api.config.js";
 import CryptoJS from "crypto-js";
 import { UploadImage } from "../service/uploadImage.js";
 const cacheKey = "users";
 const model = "user";
+const select = {
+  id: true,
+  isActive: true,
+  username: true,
+  email: true,
+  phoneNumber: true,
+  profile: true,
+  kyc: true,
+  role: true,
+  createAt: true,
+  updateAt: true,
+};
 export const UserControlller = {
   async Registor(req, res) {
     try {
@@ -82,18 +94,7 @@ export const UserControlller = {
           password: hashPassword,
           phoneNumber,
         },
-        select: {
-          id: true,
-          isActive: true,
-          username: true,
-          email: true,
-          phoneNumber: true,
-          profile: true,
-          kyc: true,
-          role: true,
-          createAt: true,
-          updateAt: true,
-        },
+        select,
       });
 
       // Generate JWT token
@@ -137,7 +138,7 @@ export const UserControlller = {
   },
   async SelectAll(req, res) {
     try {
-      const user = await CacheAndRetrieveUpdatedDataUser(cacheKey, model);
+      const user = await CacheAndRetrieveUpdatedDataUser(cacheKey, model,select);
       return SendSuccess(res, `${EMessage.fetchAllSuccess} user`, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} user`, error);
@@ -195,7 +196,6 @@ export const UserControlller = {
           role: true,
           createAt: true,
           updateAt: true,
-         
         },
       });
 
@@ -209,7 +209,7 @@ export const UserControlller = {
         JSON.parse(JSON.stringify(updateUser)),
         JSON.parse(JSON.stringify(token))
       );
-      // await redis.del(cacheKey);
+      // await client.del(cacheKey);
       return SendCreate(res, `${EMessage.loginSuccess}`, result);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.loginfall} user `, error);
@@ -268,7 +268,7 @@ export const UserControlller = {
         JSON.parse(JSON.stringify(updateUser)),
         JSON.parse(JSON.stringify(token))
       );
-      // await redis.del(cacheKey);
+      // await client.del(cacheKey);
       return SendCreate(res, `${EMessage.loginSuccess}`, result);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.loginfall} user `, error);
@@ -315,7 +315,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      // await redis.del(cacheKey);
+      // await client.del(cacheKey);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `Change password fail`, error);
@@ -354,7 +354,7 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      // await redis.del(cacheKey);
+      // await client.del(cacheKey);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `Forgot password fail`, error);
@@ -413,8 +413,8 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
+      await client.del(cacheKey);
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} user `, error);
@@ -442,8 +442,8 @@ export const UserControlller = {
           kyc: status,
         },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
+      await client.del(cacheKey);
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess} user with id ${user.id}`);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} User KYC status`, error);
@@ -462,8 +462,8 @@ export const UserControlller = {
         },
         data: { isActive: false },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
+      await client.del(cacheKey);
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
       return SendSuccess(
         res,
         `${EMessage.deleteSuccess} user with id ${user.id}`
@@ -477,9 +477,9 @@ export const UserControlller = {
       const page = parseInt(req.query.page, 10);
       const skip = page && page > 0 ? page - 1 : 0;
       let cachKey = "userPage" + page;
-      //   await redis.del(cachKey);
+      //   await client.del(cachKey);
 
-      const cachedData = await redis.get(cachKey);
+      const cachedData = await client.get(cachKey);
       if (cachedData) {
         return SendSuccess(
           res,
@@ -512,7 +512,7 @@ export const UserControlller = {
         count,
         user,
       };
-      redis.set(cachKey, JSON.stringify(result), "EX", 3600);
+      client.set(cachKey, JSON.stringify(result), "EX", 3600);
       return SendSuccess(res, `${EMessage.fetchAllSuccess} page`, result);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.fetchAllSuccess} user `, error);
@@ -552,8 +552,8 @@ export const UserControlller = {
           updateAt: true,
         },
       });
-      await redis.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model)
+      await client.del(cacheKey);
+      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, user);
     } catch (error) {
       console.error("Error updating image:", error);

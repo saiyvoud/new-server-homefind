@@ -1,13 +1,13 @@
-import Redis from 'ioredis';
-import { REDIS_HOST, REDIS_PORT } from '../config/api.config.js'; // Adjust path as needed
+import redis from "redis";
+import { REDIS_HOST, REDIS_PORT } from "../config/api.config.js"; // Adjust path as needed
 
-const redis = new Redis({
-  host: REDIS_HOST || 'redis', // Use the service name from docker-compose
-  port: REDIS_PORT || 6379,
-  retryStrategy: (times) => {
-    const delay = Math.min(times * 50, 15000); // Retry with an exponential backoff
-    return delay;
-  },
+const client = redis.createClient({
+  url: `redis://${REDIS_HOST || "redis"}:${REDIS_PORT || 6379}`,
+  
 });
 
-export default redis;
+client.on("error", (err) => {
+  console.error("Redis error:", err);
+});
+
+export default client;

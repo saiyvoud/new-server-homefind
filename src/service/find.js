@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import prisma from "../util/prismaClient.js";
 import { CacheAndRetrieveUpdatedData } from "./service.js";
 
@@ -27,8 +27,8 @@ const findFirst = (model, where) => {
 };
 
 const findIdInCached = async (cacheKey, model, id, select) => {
-  // Retrieve cached data from Redis
-  let cachedData = await redis.get(cacheKey);
+  // Retrieve cached data from client
+  let cachedData = await client.get(cacheKey);
 
   if (!cachedData) {
     // If cache is empty, fetch data from the database
@@ -37,7 +37,7 @@ const findIdInCached = async (cacheKey, model, id, select) => {
       select,
     });
 
-    CacheAndRetrieveUpdatedData(cacheKey, model);
+    CacheAndRetrieveUpdatedData(cacheKey, model, select);
     return result;
   }
 
@@ -100,7 +100,37 @@ export const FindKYCById = (id) => {
 };
 
 export const FindOrderById = (id) => {
-  return findIdInCached("orders", "order", id);
+  return findIdInCached("orders", "order", id, {
+    id: true,
+    userId: true,
+    serviceId: true,
+    paymentId: true,
+    promotionId: true,
+    bookingPrice: true,
+    totalPrice: true,
+    billQR: true,
+    createAt: true,
+    updateAt: true,
+    service: {
+      select: {
+        coverImage: true,
+        view: true,
+        category: {
+          select: {
+            title: true,
+          },
+        },
+      },
+    },
+    promotion: {
+      select: {
+        code: true,
+        qty: true,
+        startTime: true,
+        endTime: true,
+      },
+    },
+  });
 };
 
 export const FindPaymentById = (id) => {
@@ -108,11 +138,58 @@ export const FindPaymentById = (id) => {
 };
 
 export const FindReviewById = (id) => {
-  return findIdInCached("reviews", "review", id);
+  return findIdInCached("reviews", "review", id, {
+    id: true,
+    userId: true,
+    orderId: true,
+    reason: true,
+    star: true,
+    createAt: true,
+    updateAt: true,
+    user: {
+      select: {
+        username: true,
+        phoneNumber: true,
+      },
+    },
+  });
 };
 
 export const FindServiceById = (id) => {
-  return findIdInCached("services", "service", id);
+  return findIdInCached("services", "service", id, {
+    id: true,
+    posterId: true,
+    // categoryId: true,
+    // statusId: true,
+    // user:{}
+    name: true,
+    village: true,
+    district: true,
+    province: true,
+    priceMonth: true,
+    priceYear: true,
+    priceCommission: true,
+    detail: true,
+    isShare: true,
+    images: true,
+    coverImage: true,
+    createAt: true,
+    updateAt: true,
+    user: {
+      select: {
+        username: true,
+        phoneNumber: true,
+      },
+    },
+    category: {
+      select: { title: true, icon: true },
+    },
+    status: {
+      select: {
+        name: true,
+      },
+    },
+  });
 };
 
 export const FindWalletById = (id) => {

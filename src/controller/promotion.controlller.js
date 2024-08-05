@@ -9,7 +9,7 @@ import {
 } from "../service/service.js";
 import shortid from "shortid";
 import prisma from "../util/prismaClient.js";
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { DataExist, ValidatePromotion } from "../service/validate.js";
 import { FindPromotionId } from "../service/find.js";
 
@@ -75,7 +75,7 @@ const PromotionController = {
         data,
       });
 
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, promotion);
     } catch (error) {
@@ -99,7 +99,7 @@ const PromotionController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess}`, promotion);
     } catch (error) {

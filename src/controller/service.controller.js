@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import {
   FindCategoryById,
@@ -160,7 +160,7 @@ const ServiceController = {
         },
         select,
       });
-      await redis.del(cacheKey + userId);
+      await client.del(cacheKey + userId);
       await CacheAndInsertData(cacheKey, model, service, select);
       SendSuccess(res, `${EMessage.insertSuccess} service`, service);
     } catch (error) {
@@ -273,7 +273,7 @@ const ServiceController = {
         },
         select,
       });
-      await redis.del(cacheKey + posterId);
+      await client.del(cacheKey + posterId);
       await CacheAndInsertData(cacheKey, model, service, select);
       SendSuccess(res, `${EMessage.insertSuccess} service`, service);
     } catch (error) {
@@ -367,7 +367,7 @@ const ServiceController = {
       });
 
       // Clear the cache
-      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      await client.del(cacheKey, cacheKey + serviceExists.posterId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} service`, service);
@@ -408,7 +408,7 @@ const ServiceController = {
           coverImage: coverImage_url,
         },
       });
-      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      await client.del(cacheKey, cacheKey + serviceExists.posterId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} service coverImage`, service);
     } catch (error) {
@@ -466,7 +466,7 @@ const ServiceController = {
         where: { id },
         data: { images: images_url_List },
       });
-      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      await client.del(cacheKey, cacheKey + serviceExists.posterId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} service images`, service);
     } catch (error) {
@@ -501,7 +501,7 @@ const ServiceController = {
           isShare,
         },
       });
-      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      await client.del(cacheKey, cacheKey + serviceExists.posterId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} service `, service);
     } catch (error) {
@@ -525,7 +525,7 @@ const ServiceController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey, cacheKey + serviceExists.posterId);
+      await client.del(cacheKey, cacheKey + serviceExists.posterId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
     } catch (error) {

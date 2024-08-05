@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindStatusById } from "../service/find.js";
 import {
@@ -51,7 +51,7 @@ const StatusController = {
         where: { id: id },
         data: data,
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess} status`, status);
     } catch (error) {
@@ -68,7 +68,7 @@ const StatusController = {
         where: { id },
         data: { isActive: false },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, `${EMessage.deleteSuccess} status`, status);
     } catch (error) {

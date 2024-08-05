@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import {
   FindOrderById,
@@ -10,8 +10,8 @@ import {
   CacheAndRetrieveUpdatedData,
   SendCreate,
   SendError,
- SendErrorCatch,
-SendSuccess,
+  SendErrorCatch,
+  SendSuccess,
 } from "../service/service.js";
 import { DataExist, ValidateReview } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
@@ -67,9 +67,9 @@ const ReviewController = {
         select,
       });
       CacheAndInsertData(cacheKey, model, review, select);
-     return SendCreate(res, `${EMessage.insertSuccess}`, review);
+      return SendCreate(res, `${EMessage.insertSuccess}`, review);
     } catch (error) {
-     return SendErrorCatch(res, `${EMessage.insertFailed} review`, error);
+      return SendErrorCatch(res, `${EMessage.insertFailed} review`, error);
     }
   },
 
@@ -125,13 +125,13 @@ const ReviewController = {
         data,
       });
 
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       // ส่ง response ที่สำเร็จ
-     return SendSuccess(res, `${EMessage.updateSuccess}`, review);
+      return SendSuccess(res, `${EMessage.updateSuccess}`, review);
     } catch (error) {
       // จัดการข้อผิดพลาด
-     return SendErrorCatch(res, `${EMessage.updateFailed} review`, error);
+      return SendErrorCatch(res, `${EMessage.updateFailed} review`, error);
     }
   },
   async Delete(req, res) {
@@ -147,19 +147,19 @@ const ReviewController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
-     return SendSuccess(res, `${EMessage.deleteSuccess}`, review);
+      return SendSuccess(res, `${EMessage.deleteSuccess}`, review);
     } catch (error) {
-     return SendErrorCatch(res, `${EMessage.deleteFailed} review`, error);
+      return SendErrorCatch(res, `${EMessage.deleteFailed} review`, error);
     }
   },
   async SelectAll(req, res) {
     try {
-      const review = await  CacheAndRetrieveUpdatedData(cacheKey, model, select);
-     return SendSuccess(res, `${EMessage.fetchAllSuccess}`, review);
+      const review = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      return SendSuccess(res, `${EMessage.fetchAllSuccess}`, review);
     } catch (error) {
-     return SendErrorCatch(res, `${EMessage.errorFetchingAll} review`, error);
+      return SendErrorCatch(res, `${EMessage.errorFetchingAll} review`, error);
     }
   },
   async SelectOne(req, res) {
@@ -167,11 +167,11 @@ const ReviewController = {
       const id = req.params.id;
       const review = await FindReviewById(id);
       if (!review) {
-       return SendError(res, 404, `${EMessage.notFound} review with id ${id}`);
+        return SendError(res, 404, `${EMessage.notFound} review with id ${id}`);
       }
-     return SendSuccess(res, `${EMessage.fetchOneSuccess}`, review);
+      return SendSuccess(res, `${EMessage.fetchOneSuccess}`, review);
     } catch (error) {
-     return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
+      return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
     }
   },
 };

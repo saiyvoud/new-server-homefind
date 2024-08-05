@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import {
   FindPromotionId,
@@ -65,7 +65,7 @@ const WalletController = {
         },
         select,
       });
-      await redis.del(cacheKey + walletExists.userId);
+      await client.del(cacheKey + walletExists.userId);
       await CacheAndInsertData(cacheKey, model, wallet);
       SendCreate(res, `${EMessage.insertSuccess} wallet`, wallet);
     } catch (error) {
@@ -118,7 +118,7 @@ const WalletController = {
       });
 
       // Clear the cache
-      await redis.del(cacheKey, cacheKey + walletExists.userId);
+      await client.del(cacheKey, cacheKey + walletExists.userId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
 
       // Send success response
@@ -143,7 +143,7 @@ const WalletController = {
         where: { id },
         data: { isActive: false },
       });
-      await redis.del(cacheKey, cacheKey + walletExists.userId);
+      await client.del(cacheKey, cacheKey + walletExists.userId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, wallet);
     } catch (error) {

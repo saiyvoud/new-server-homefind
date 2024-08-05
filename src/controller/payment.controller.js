@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindPaymentById } from "../service/find.js";
 import {
@@ -66,7 +66,7 @@ const PaymentController = {
         where: { id },
         data,
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
@@ -99,7 +99,7 @@ const PaymentController = {
           qr_Image: img_url,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
@@ -123,7 +123,7 @@ const PaymentController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess}`, payment);
     } catch (error) {

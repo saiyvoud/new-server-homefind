@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindCategoryById } from "../service/find.js";
 import {
@@ -59,7 +59,7 @@ const CategoryController = {
         },
         data,
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
@@ -89,7 +89,7 @@ const CategoryController = {
           icon: img_url,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
@@ -110,7 +110,7 @@ const CategoryController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendCreate(res, `${EMessage.deleteSuccess}`, category);
     } catch (error) {

@@ -1,5 +1,5 @@
 import { StatusType } from "../service/enum.js";
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import {
   FindOrderById,
@@ -152,7 +152,7 @@ const OrderController = {
       });
 
       // Cache the order and send a success response
-      await redis.del(cacheKey + userId);
+      await client.del(cacheKey + userId);
       CacheAndInsertData(cacheKey, model, order, select);
       SendCreate(res, `${EMessage.insertSuccess}`, order);
     } catch (error) {
@@ -271,7 +271,7 @@ const OrderController = {
       });
 
       // Clear the cache
-      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      await client.del(cacheKey, cacheKey + orderExists.userId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
@@ -305,7 +305,7 @@ const OrderController = {
         where: { id },
         data: { status },
       });
-      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      await client.del(cacheKey, cacheKey + orderExists.userId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
@@ -342,7 +342,7 @@ const OrderController = {
         where: { id },
         data: { billQR: img_url },
       });
-      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      await client.del(cacheKey, cacheKey + orderExists.userId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
@@ -360,7 +360,7 @@ const OrderController = {
         where: { id },
         data: { isActive: false },
       });
-      await redis.del(cacheKey, cacheKey + orderExists.userId);
+      await client.del(cacheKey, cacheKey + orderExists.userId);
       CacheAndRetrieveUpdatedData(cacheKey, model, select);
       SendSuccess(res, `${EMessage.deleteSuccess} order`, order);
     } catch (error) {

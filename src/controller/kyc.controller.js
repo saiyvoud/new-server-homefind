@@ -1,4 +1,4 @@
-import redis from "../Database/radis.js";
+import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindKYCById, FindUserById } from "../service/find.js";
 import {
@@ -174,7 +174,7 @@ const KYCController = {
       });
 
       // Clear the cache
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
 
       CacheAndRetrieveUpdatedData(cacheKey, model);
       // Send success response
@@ -201,7 +201,7 @@ const KYCController = {
           isActive: false,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.deleteSuccess}`, kyc);
     } catch (error) {
@@ -241,7 +241,7 @@ const KYCController = {
           profile,
         },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
@@ -305,7 +305,7 @@ const KYCController = {
         where: { id },
         data: { docImage: docImageList },
       });
-      await redis.del(cacheKey);
+      await client.del(cacheKey);
       CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
