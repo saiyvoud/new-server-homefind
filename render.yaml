@@ -6,7 +6,6 @@ services:
       - "81:81"  # Assuming SERVER_PORT is 81
     env_file:
       - DATABASE_URL="postgresql://homefind:homefind@postgresql-180359-0.cloudclusters.net:10051/homefind"
-      -EAPI=/api/v1
       -SERVER_PORT=81
       -ECRET_KEY=Midi_Technology_Invest
       -REFRESH_TOKEN=Midi_Technology_123456

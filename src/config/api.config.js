@@ -5,7 +5,7 @@ const REDIS_HOST = process.env.REDIS_HOST;
 const REDIS_PORT = process.env.REDIS_PORT;
 
 const KLimit = 20;
-const EAPI = process.env.EAPI;
+const EAPI = "/api/v1";
 const SERVER_PORT = process.env.SERVER_PORT;
 
 const SECRET_KEY = process.env.SECRET_KEY;
