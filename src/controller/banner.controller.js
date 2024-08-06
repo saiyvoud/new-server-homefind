@@ -196,7 +196,7 @@ const BannerController = {
         const banner = await prisma.banner.findMany({
           where: {
             isActive: true,
-            isPublice: true,
+            isPublic: true,
           },
           orderBy: { createAt: "desc" },
         });
