@@ -5,18 +5,19 @@ services:
     ports:
       - "81:81"  # Assuming SERVER_PORT is 81
     env_file:
-      - DATABASE_URL="postgresql://homefind:homefind@postgresql-180359-0.cloudclusters.net:10051/homefind"
-      -SERVER_PORT=81
-      -ECRET_KEY=Midi_Technology_Invest
-      -REFRESH_TOKEN=Midi_Technology_123456
-      -REDIS_HOST=my-redis-container
-      -REDIS_PORT=6379
-      -NODE_ENV=development
-      -JWT_TIMEOUT = 50h
-      -JWT_REFRECH_TIMEOUT = 72h
-      -CLOUDINARY_NAME=dq3d5qshp
-      -CLOUDINARY_API_KEY=573132183673549
-      -CLOUDINARY_API_SECRET=aHzl1UuAlC5K3B6VggLAnlyS6aM
+      - DATABASE_URL:"postgresql://homefind:homefind@postgresql-180359-0.cloudclusters.net:10051/homefind"
+      -EAPI:/api/v1
+      -SERVER_PORT:81
+      -ECRET_KEY:Midi_Technology_Invest
+      -REFRESH_TOKEN:Midi_Technology_123456
+      -REDIS_HOST:my-redis-container
+      -REDIS_PORT:6379
+      -NODE_ENV:development
+      -JWT_TIMEOUT : 50h
+      -JWT_REFRECH_TIMEOUT : 72h
+      -CLOUDINARY_NAME:dq3d5qshp
+      -CLOUDINARY_API_KEY:573132183673549
+      -CLOUDINARY_API_SECRET:aHzl1UuAlC5K3B6VggLAnlyS6aM
     depends_on:
       my-redis-container:
         condition: service_healthy
