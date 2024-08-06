@@ -2,22 +2,20 @@ version: '3.9'
 services:
   app:
     build: .
-    container_name: my-node-app
     ports:
-      - "81:81"
+      - "${SERVER_PORT}:${SERVER_PORT}"
     env_file:
       - .env
     depends_on:
-      redis:
+      my-redis-container:
         condition: service_healthy
     networks:
       - app_networks
 
-  redis:
+  my-redis-container:
     image: redis:7.4.0
-    container_name: redis_server
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_PORT}"
     networks:
       - app_networks
     volumes:
@@ -34,7 +32,3 @@ networks:
 
 volumes:
   redis_data:
-
-
-
-

@@ -43,12 +43,7 @@ const checkDatabaseConnection = async () => {
   }
 };
 
-client.on("error", (err) => {
-  console.error("Redis error:", err);
-});
-(async () => {
-  await client.connect();
-})();
+
 
 // await client.del("users");
 
@@ -56,7 +51,7 @@ client.on("error", (err) => {
 // console.log('user :>> ', user);
 // Start Server
 
-app.listen(SERVER_PORT, () => {
+app.listen(SERVER_PORT, async() => {
   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);
   console.log(`Server Already: ${SERVER_PORT}`);
   checkDatabaseConnection();
