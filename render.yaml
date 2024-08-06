@@ -3,7 +3,7 @@ services:
   app:
     build: .
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "81:81"  # Assuming SERVER_PORT is 81
     env_file:
       - .env
     depends_on:
@@ -15,7 +15,7 @@ services:
   my-redis-container:
     image: redis:7.4.0
     ports:
-      - "${REDIS_PORT}:${REDIS_PORT}"
+      - "6379:6379"  # Redis default port
     networks:
       - app_networks
     volumes:
