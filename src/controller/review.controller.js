@@ -15,7 +15,7 @@ import {
 } from "../service/service.js";
 import { DataExist, ValidateReview } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
-const cacheKey = "reviews";
+let cacheKey = "reviews";
 const model = "review";
 let select = {
   id: true,
@@ -170,6 +170,55 @@ const ReviewController = {
         return SendError(res, 404, `${EMessage.notFound} review with id ${id}`);
       }
       return SendSuccess(res, `${EMessage.fetchOneSuccess}`, review);
+    } catch (error) {
+      return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
+    }
+  },
+
+  async SelectByUserId(req, res) {
+    try {
+      const id = req.params.id;
+      let review;
+      let cachedData = await client.get(cacheKey + id);
+      if (!cachedData) {
+        review = await prisma.review.findMany({
+          where: {
+            userId: id,
+            isActive: true,
+          },
+          orderBy: {
+            createAt: "desc",
+          },
+        });
+        await client.set(cacheKey + id, JSON.stringify(review), "EX", 3600);
+      } else {
+        review = JSON.parse(cachedData);
+      }
+      return SendSuccess(res, `${EMessage.fetchAllSuccess} by userId`, review);
+    } catch (error) {
+      return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
+    }
+  },
+  async SelectByOrderId(req, res) {
+    try {
+      const id = req.params.id;
+      let review;
+      let cachedData = await client.get(cacheKey + id);
+      if (!cachedData) {
+        review = await prisma.review.findMany({
+          where: {
+            orderId: id,
+            isActive: true,
+          },
+          orderBy: {
+            createAt: "desc",
+          },
+        });
+        await client.set(cacheKey + id, JSON.stringify(review), "EX", 3600);
+      } else {
+        review = JSON.parse(cachedData);
+      }
+      return SendSuccess(res, `${EMessage.fetchAllSuccess} by orderId`, review);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
     }

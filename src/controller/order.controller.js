@@ -399,7 +399,29 @@ const OrderController = {
       );
       SendSuccess(res, `${EMessage.fetchAllSuccess} order by userId `, order);
     } catch (error) {
-      SendErrorCatch(res, `${EMessage.errorFetchingAll} order by userId`, error);
+      SendErrorCatch(
+        res,
+        `${EMessage.errorFetchingAll} order by userId`,
+        error
+      );
+    }
+  },
+  async SelectByserviceId(req, res) {
+    try {
+      const serviceId = req.params.serviceId;
+      let order;
+      const cachedData = await client.get(serviceId);
+      if (cachedData){
+       order=await prisma.order.findMany({
+        where:{serviceId}
+       })
+      }
+    } catch (error) {
+      SendErrorCatch(
+        res,
+        `${EMessage.errorFetchingAll} order by userId`,
+        error
+      );
     }
   },
 };
