@@ -16,6 +16,7 @@ import prisma from "../util/prismaClient.js";
 
 let cacheKey = "kycs";
 let model = "kyc";
+let select;
 const KYCController = {
   async Insert(req, res) {
     try {

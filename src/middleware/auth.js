@@ -8,7 +8,6 @@ import {
 import { EMessage } from "../service/enum.js";
 import prisma from "../util/prismaClient.js";
 
-
 export const auth = async (req, res, next) => {
   try {
     const authorization = req.headers["authorization"];

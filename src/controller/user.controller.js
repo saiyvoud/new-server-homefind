@@ -30,9 +30,9 @@ import { generateJWTtoken } from "../config/GenerateToken.js";
 import { KLimit, SECRET_KEY } from "../config/api.config.js";
 import CryptoJS from "crypto-js";
 import { UploadImage } from "../service/uploadImage.js";
-const cacheKey = "users";
+let cacheKey = "users";
 const model = "user";
-const select = {
+let select = {
   id: true,
   isActive: true,
   username: true,

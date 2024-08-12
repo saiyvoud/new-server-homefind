@@ -15,6 +15,7 @@ import { FindPromotionId } from "../service/find.js";
 
 let cacheKey = "promotions";
 let model = "promotion";
+let select;
 
 const PromotionController = {
   async Insert(req, res) {

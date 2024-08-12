@@ -14,6 +14,7 @@ import { DataExist, ValidateBanner } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 let cacheKey = "banners";
 const model = "banner";
+let select;
 const BannerController = {
   async Insert(req, res) {
     try {

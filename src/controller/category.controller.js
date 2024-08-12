@@ -12,8 +12,9 @@ import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateCategory } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 
-const cacheKey = "categorys";
+let cacheKey = "categorys";
 const model = "category";
+let select;
 const CategoryController = {
   async Insert(req, res) {
     try {

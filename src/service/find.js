@@ -193,7 +193,21 @@ export const FindServiceById = (id) => {
 };
 
 export const FindWalletById = (id) => {
-  return findIdInCached("wallets", "wallet", id);
+  return findIdInCached("wallets", "wallet", id, {
+    id: true,
+    userId: true,
+    promotionId: true,
+    createAt: true,
+    updateAt: true,
+    status: true,
+    promotion: {
+      select: {
+        qty: true,
+        code: true,
+        isGiven: true,
+      },
+    },
+  });
 };
 
 export const FindNotificationById = (id) => {

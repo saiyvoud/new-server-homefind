@@ -13,6 +13,7 @@ import prisma from "../util/prismaClient.js";
 
 const cacheKey = "status";
 const model = "status";
+let select;
 const StatusController = {
   async Insert(req, res) {
     try {

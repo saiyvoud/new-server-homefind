@@ -14,6 +14,7 @@ import { DataExist, ValidatePayment } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 const cacheKey = "payments";
 const model = "payment";
+let select;
 const PaymentController = {
   async Insert(req, res) {
     try {

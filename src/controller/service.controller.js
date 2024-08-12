@@ -19,7 +19,7 @@ import { DataExist, ValidateService } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 let cacheKey = "services";
 const model = "service";
-const select = {
+let select = {
   id: true,
   posterId: true,
   // categoryId: true,
