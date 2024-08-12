@@ -416,6 +416,7 @@ const OrderController = {
         where:{serviceId}
        })
       }
+      SendSuccess(res, `${EMessage.fetchAllSuccess}  `, order);
     } catch (error) {
       SendErrorCatch(
         res,
