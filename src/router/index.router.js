@@ -39,11 +39,14 @@ route.put(`${category}/update/:id`, CategoryController.Update);
 route.put(`${category}/updateIcon/:id`, CategoryController.UpdateImage);
 
 route.delete(`${category}/delete/:id`, CategoryController.Delete);
-//search  title order by created
+
+route.get(`${category}/search`, CategoryController.Search);
+
 
 //-----------------------banner------------------------------
 const kyc = "/kyc";
 route.get(`${kyc}/selAll`, auth, admin, KYCController.SelectAll);
+route.get(`${kyc}/selByUserId/:id`,auth,KYCController.SelectByUserId);
 route.get(`${kyc}/selOne/:id`, auth, KYCController.SelectOne);
 
 route.post(`${kyc}/insert`, auth, KYCController.Insert);
@@ -60,6 +63,7 @@ const order = `/order`;
 route.get(`${order}/selAll`, auth, admin, OrderController.SelectAll);
 route.get(`${order}/selOne/:id`, auth, OrderController.SelectOne);
 route.get(`${order}/selByUserId/:userId`, auth, OrderController.SelectByUserId);
+route.get(`${order}/selByServicesId/:servicesId`, auth, OrderController.SelectByservicesId);
 
 route.post(`${order}/insert`, auth, OrderController.Insert);
 
@@ -129,11 +133,17 @@ route.put(`${service}/updateImages/:id`,auth, ServiceController.UpdateImages);
 
 route.delete(`${service}/delete/:id`,auth, ServiceController.Delete);
 
-//selct by  category id
-// select by isshared
-//search by name order by created
-//search by v d p 
-// search between  price
+route.get(`${service}/selByCategoryId/:categoryId`,auth, ServiceController.SelectByCategoryId);
+route.get(`${service}/search`,auth, ServiceController.Search);
+route.get(`${service}/searchAddress`,auth, ServiceController.SearchAddress);
+
+route.get(`${service}/selByIsShare/:isShare`,auth,ServiceController.SelectByShare);
+route.get(`${service}/searchPriceRange`,auth, ServiceController.SelectByPriceRange);
+//selct by  category id--
+// select by isshared--
+//search by name order by created--
+//search by v d p --
+// search between  price --
 
 
 //-----------------------status------------------------------

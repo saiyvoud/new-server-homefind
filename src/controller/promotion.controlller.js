@@ -15,6 +15,9 @@ import { FindPromotionId } from "../service/find.js";
 
 let cacheKey = "promotions";
 let model = "promotion";
+let where = {
+  isActive: true,
+};
 let select;
 
 const PromotionController = {
@@ -43,7 +46,7 @@ const PromotionController = {
           endTime,
         },
       });
-      await CacheAndInsertData(cacheKey, model, promotion);
+      await CacheAndInsertData(cacheKey, model, where, promotion, select);
       SendCreate(res, `${EMessage.insertSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.insertFailed} promotion`, error);
@@ -77,7 +80,7 @@ const PromotionController = {
       });
 
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} promotion`, error);
@@ -101,7 +104,7 @@ const PromotionController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} promotion`, error);
@@ -109,7 +112,7 @@ const PromotionController = {
   },
   async SelAll(req, res) {
     try {
-      let promotion = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      let promotion = await CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
       SendSuccess(res, `${EMessage.fetchAllSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} promotion`, error);
@@ -134,7 +137,7 @@ const PromotionController = {
   async SelectByCode(req, res) {
     try {
       const code = req.params.code;
-      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, where, model, select);
       const promotion = dataList.find((pro) => pro.code == code);
       if (!promotion) {
         SendError(res, 404, `${EMessage.notFound} promotion with code ${code}`);
@@ -153,7 +156,7 @@ const PromotionController = {
     try {
       let { isGiven } = req.params;
       if (typeof isGiven !== "boolean") isGiven = isGiven === "true";
-      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, where, model, select);
 
       const promotion = dataList.filter((pro) => pro.isGiven === isGiven);
       SendSuccess(res, `Select code promotion`, promotion);

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import {
-  CacheAndInsertDataUser,
-  CacheAndRetrieveUpdatedDataUser,
+  CacheAndInsertData,
+  CacheAndRetrieveUpdatedData,
   SendError,
   VerifyToken,
 } from "../service/service.js";
@@ -31,7 +31,7 @@ export const admin = async (req, res, next) => {
     const id = req.user;
 
     if (!id) return SendError(res, 401, "You are not allowed id");
-    const data = await CacheAndRetrieveUpdatedDataUser("users", "user");
+    const data = await CacheAndRetrieveUpdatedData("users", "user");
     const user = data.find(
       (user) =>
         user.id === id && (user.role === "admin" || user.role === "supperadmin")

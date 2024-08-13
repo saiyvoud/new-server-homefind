@@ -6,8 +6,8 @@ import {
   FindUserByPhoneNumber,
 } from "../service/find.js";
 import {
-  CacheAndInsertDataUser,
-  CacheAndRetrieveUpdatedDataUser,
+  CacheAndInsertData,
+  CacheAndRetrieveUpdatedData,
   Decrypt,
   Endcrypt,
   SendCreate,
@@ -32,6 +32,9 @@ import CryptoJS from "crypto-js";
 import { UploadImage } from "../service/uploadImage.js";
 let cacheKey = "users";
 const model = "user";
+let where = {
+  isActive: true,
+};
 let select = {
   id: true,
   isActive: true,
@@ -106,7 +109,7 @@ export const UserControlller = {
       const token = await generateJWTtoken(dataJWT);
       const result = { ...user, token };
 
-      await CacheAndInsertDataUser(cacheKey, user);
+      await CacheAndInsertData(cacheKey, model, where, user);
 
       // Send response
       return SendCreate(res, `${EMessage.registrationSuccess}`, result);
@@ -138,7 +141,7 @@ export const UserControlller = {
   },
   async SelectAll(req, res) {
     try {
-      const user = await CacheAndRetrieveUpdatedDataUser(cacheKey, model,select);
+      const user = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
       return SendSuccess(res, `${EMessage.fetchAllSuccess} user`, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} user`, error);
@@ -414,7 +417,7 @@ export const UserControlller = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} user `, error);
@@ -443,7 +446,7 @@ export const UserControlller = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess} user with id ${user.id}`);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} User KYC status`, error);
@@ -463,7 +466,7 @@ export const UserControlller = {
         data: { isActive: false },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       return SendSuccess(
         res,
         `${EMessage.deleteSuccess} user with id ${user.id}`
@@ -553,7 +556,7 @@ export const UserControlller = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedDataUser(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model);
       SendSuccess(res, `${EMessage.updateSuccess}`, user);
     } catch (error) {
       console.error("Error updating image:", error);

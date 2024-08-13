@@ -28,7 +28,8 @@ export const EMessage = {
   refreshTokenSuccess: "Token refreshed successfully",
   refreshTokenunSuccess: "Token refreshed unsuccess",
   tokenGenerationError: "Error generating token",
-
+  searchsuccess: "Search successful",
+  searchsuccessFailed: "Search failed",
   userAlreadyExists: "User already exists",
 };
 

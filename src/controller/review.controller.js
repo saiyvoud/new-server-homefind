@@ -16,6 +16,7 @@ import {
 import { DataExist, ValidateReview } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 let cacheKey = "reviews";
+let where = { isActive: true };
 const model = "review";
 let select = {
   id: true,
@@ -66,7 +67,8 @@ const ReviewController = {
         },
         select,
       });
-      CacheAndInsertData(cacheKey, model, review, select);
+      await client.del([cacheKey + "-u-" + userId, cacheKey + "-o-" + orderId]);
+      CacheAndInsertData(cacheKey, model, where, review, select);
       return SendCreate(res, `${EMessage.insertSuccess}`, review);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.insertFailed} review`, error);
@@ -125,8 +127,12 @@ const ReviewController = {
         data,
       });
 
-      await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      await client.del([
+        cacheKey,
+        cacheKey + "-u-" + reviewExists.userId,
+        cacheKey + "-o-" + reviewExists.orderId,
+      ]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       // ส่ง response ที่สำเร็จ
       return SendSuccess(res, `${EMessage.updateSuccess}`, review);
     } catch (error) {
@@ -147,8 +153,12 @@ const ReviewController = {
           isActive: false,
         },
       });
-      await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      await client.del([
+        cacheKey,
+        cacheKey + "-u-" + reviewExists.userId,
+        cacheKey + "-o-" + reviewExists.orderId,
+      ]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       return SendSuccess(res, `${EMessage.deleteSuccess}`, review);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.deleteFailed} review`, error);
@@ -156,7 +166,12 @@ const ReviewController = {
   },
   async SelectAll(req, res) {
     try {
-      const review = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      const review = await CacheAndRetrieveUpdatedData(
+        cacheKey,
+        model,
+        where,
+        select
+      );
       return SendSuccess(res, `${EMessage.fetchAllSuccess}`, review);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} review`, error);
@@ -178,22 +193,16 @@ const ReviewController = {
   async SelectByUserId(req, res) {
     try {
       const id = req.params.id;
-      let review;
-      let cachedData = await client.get(cacheKey + id);
-      if (!cachedData) {
-        review = await prisma.review.findMany({
-          where: {
-            userId: id,
-            isActive: true,
-          },
-          orderBy: {
-            createAt: "desc",
-          },
-        });
-        await client.set(cacheKey + id, JSON.stringify(review), "EX", 3600);
-      } else {
-        review = JSON.parse(cachedData);
-      }
+      let review = await CacheAndRetrieveUpdatedData(
+        cacheKey + "-u-" + id,
+        model,
+        {
+          userId: id,
+          isActive: true,
+        },
+        select
+      );
+
       return SendSuccess(res, `${EMessage.fetchAllSuccess} by userId`, review);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);
@@ -202,22 +211,15 @@ const ReviewController = {
   async SelectByOrderId(req, res) {
     try {
       const id = req.params.id;
-      let review;
-      let cachedData = await client.get(cacheKey + id);
-      if (!cachedData) {
-        review = await prisma.review.findMany({
-          where: {
-            orderId: id,
-            isActive: true,
-          },
-          orderBy: {
-            createAt: "desc",
-          },
-        });
-        await client.set(cacheKey + id, JSON.stringify(review), "EX", 3600);
-      } else {
-        review = JSON.parse(cachedData);
-      }
+      let review = await CacheAndRetrieveUpdatedData(
+        cacheKey + "-o-" + id,
+        model,
+        {
+          orderId: id,
+          isActive: true,
+        },
+        select
+      );
       return SendSuccess(res, `${EMessage.fetchAllSuccess} by orderId`, review);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingOne} review`, error);

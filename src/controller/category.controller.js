@@ -7,6 +7,7 @@ import {
   SendCreate,
   SendError,
   SendErrorCatch,
+  SendSuccess,
 } from "../service/service.js";
 import { UploadImage } from "../service/uploadImage.js";
 import { DataExist, ValidateCategory } from "../service/validate.js";
@@ -15,6 +16,7 @@ import prisma from "../util/prismaClient.js";
 let cacheKey = "categorys";
 const model = "category";
 let select;
+let where = { isActive: true };
 const CategoryController = {
   async Insert(req, res) {
     try {
@@ -41,7 +43,7 @@ const CategoryController = {
           icon: img_url,
         },
       });
-      await CacheAndInsertData(cacheKey, model, category);
+      await CacheAndInsertData(cacheKey, model, where, category);
       return SendCreate(res, `${EMessage.insertSuccess}`, category);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.insertFailed}`, error);
@@ -61,7 +63,7 @@ const CategoryController = {
         data,
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -91,7 +93,7 @@ const CategoryController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -112,7 +114,7 @@ const CategoryController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.deleteSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed}`, error);
@@ -120,7 +122,11 @@ const CategoryController = {
   },
   async SelectAll(req, res) {
     try {
-      const category = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const category = await CacheAndRetrieveUpdatedData(
+        cacheKey,
+        model,
+        where
+      );
       return SendCreate(res, `${EMessage.fetchAllSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll}`, error);
@@ -133,6 +139,49 @@ const CategoryController = {
       if (!category)
         return SendError(res, 404, `${EMessage.notFound} category by id ${id}`);
       return SendCreate(res, `${EMessage.fetchOneSuccess}`, category);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.errorFetchingOne}`, error);
+    }
+  },
+
+  async Search(req, res) {
+    try {
+      const search = req.query.search;
+      const cachedData = await client.get(cacheKey + search);
+      let results;
+      if (!cachedData) {
+        const category = await prisma.category.findMany({
+          where: {
+            isActive: true,
+            title: { contains: search },
+          },
+          orderBy: {
+            createAt: "desc",
+          },
+        });
+        const count = await prisma.category.count({
+          where: {
+            isActive: true,
+            title: { contains: search },
+          },
+          orderBy: {
+            createAt: "desc",
+          },
+        });
+        results = {
+          count,
+          category,
+        };
+        await client.set(
+          cacheKey + search,
+          JSON.stringify(results),
+          "EX",
+          1800
+        );
+      } else {
+        results = JSON.parse(cachedData);
+      }
+      SendSuccess(res, `${EMessage.searchsuccess}`, results);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingOne}`, error);
     }

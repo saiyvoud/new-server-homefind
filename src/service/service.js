@@ -31,51 +31,52 @@ export const CheckUniqueElement = (a, b) => {
   }
   return result;
 };
-export const CacheAndInsertDataUser = async (cacheKey, newData) => {
-  try {
-    // Cache the new user data
 
-    const cachedData = await client.get(cacheKey);
+// export const CacheAndInsertDataUser = async (cacheKey, newData) => {
+//   try {
+//     // Cache the new user data
 
-    if (cachedData) {
-      // If cache exists, update it with the new user
-      const users = JSON.parse(cachedData);
-      users.unshift(newData);
-      await client.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
-    } else {
-      // If no cache, fetch all active users from database and cache them
-      const users = await prisma.user.findMany({
-        where: { isActive: true },
-        orderBy: { createAt: "desc" },
-        select: {
-          id: true,
-          isActive: true,
-          username: true,
-          email: true,
-          phoneNumber: true,
-          profile: true,
-          kyc: true,
-          role: true,
-          createAt: true,
-          updateAt: true,
-        },
-      });
-      await client.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
-    }
-  } catch (error) {
-    console.error(`Failed to cache and insert data for ${model}:`, error);
-    throw error;
-  }
-};
+//     const cachedData = await client.get(cacheKey);
 
-export const CacheAndInsertData = async (cacheKey, model, newData, select) => {
+//     if (cachedData) {
+//       // If cache exists, update it with the new user
+//       const users = JSON.parse(cachedData);
+//       users.unshift(newData);
+//       await client.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
+//     } else {
+//       // If no cache, fetch all active users from database and cache them
+//       const users = await prisma.user.findMany({
+//         where: { isActive: true },
+//         orderBy: { createAt: "desc" },
+//         select: {
+//           id: true,
+//           isActive: true,
+//           username: true,
+//           email: true,
+//           phoneNumber: true,
+//           profile: true,
+//           kyc: true,
+//           role: true,
+//           createAt: true,
+//           updateAt: true,
+//         },
+//       });
+//       await client.set(cacheKey, JSON.stringify(users), "EX", 3600); // Cache for 1 hour
+//     }
+//   } catch (error) {
+//     console.error(`Failed to cache and insert data for ${model}:`, error);
+//     throw error;
+//   }
+// };
+
+export const CacheAndInsertData = async (cacheKey, model,where, newData, select) => {
   try {
     const cachedData = await client.get(cacheKey);
     let data;
 
     if (!cachedData) {
       data = await prisma[model].findMany({
-        where: { isActive: true },
+        where,
         orderBy: { createAt: "desc" },
         select,
       });
@@ -93,22 +94,22 @@ export const CacheAndInsertData = async (cacheKey, model, newData, select) => {
   }
 };
 
-export const CacheAndRetrieveUpdatedData = async (cacheKey, model, select) => {
+export const CacheAndRetrieveUpdatedData = async (cacheKey, model,where, select) => {
   try {
     const cachedData = await client.get(cacheKey);
     let data;
-
     if (!cachedData) {
       data = await prisma[model].findMany({
-        where: { isActive: true },
+        where,
         select,
         orderBy: { createAt: "desc" },
       });
-
+      
       await client.set(cacheKey, JSON.stringify(data), "EX", 3600);
     } else {
       data = JSON.parse(cachedData);
     }
+  //  console.log('data :>> ', data);
 
     return data;
   } catch (error) {
@@ -117,40 +118,40 @@ export const CacheAndRetrieveUpdatedData = async (cacheKey, model, select) => {
   }
 };
 
-export const CacheAndRetrieveUpdatedDataUser = async (cacheKey, model) => {
-  try {
-    const cachedData = await client.get(cacheKey);
-    let data;
+// export const CacheAndRetrieveUpdatedDataUser = async (cacheKey, model) => {
+//   try {
+//     const cachedData = await client.get(cacheKey);
+//     let data;
 
-    if (!cachedData) {
-      data = await prisma.user.findMany({
-        where: { isActive: true },
-        orderBy: { createAt: "desc" },
-        select: {
-          id: true,
-          isActive: true,
-          username: true,
-          email: true,
-          phoneNumber: true,
-          profile: true,
-          kyc: true,
-          role: true,
-          createAt: true,
-          updateAt: true,
-        },
-      });
+//     if (!cachedData) {
+//       data = await prisma.user.findMany({
+//         where: { isActive: true },
+//         orderBy: { createAt: "desc" },
+//         select: {
+//           id: true,
+//           isActive: true,
+//           username: true,
+//           email: true,
+//           phoneNumber: true,
+//           profile: true,
+//           kyc: true,
+//           role: true,
+//           createAt: true,
+//           updateAt: true,
+//         },
+//       });
 
-      await client.set(cacheKey, JSON.stringify(data), "EX", 3600);
-    } else {
-      data = JSON.parse(cachedData);
-    }
+//       await client.set(cacheKey, JSON.stringify(data), "EX", 3600);
+//     } else {
+//       data = JSON.parse(cachedData);
+//     }
 
-    return data;
-  } catch (error) {
-    console.error(`Failed to retrieve updated data for ${model}:`, error);
-    throw error;
-  }
-};
+//     return data;
+//   } catch (error) {
+//     console.error(`Failed to retrieve updated data for ${model}:`, error);
+//     throw error;
+//   }
+// };
 export const Decrypt = (hash) => {
   return new Promise(async (resolve, reject) => {
     try {

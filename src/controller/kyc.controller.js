@@ -16,6 +16,7 @@ import prisma from "../util/prismaClient.js";
 
 let cacheKey = "kycs";
 let model = "kyc";
+let where = { isActive: true };
 let select;
 const KYCController = {
   async Insert(req, res) {
@@ -110,7 +111,8 @@ const KYCController = {
           profile: profile_url,
         },
       });
-      await CacheAndInsertData(cacheKey, model, kyc);
+      await client.del(cacheKey + "-" + userId);
+      await CacheAndInsertData(cacheKey, model, where, kyc, select);
       SendCreate(res, `${EMessage.insertSuccess} kyc`, kyc);
     } catch (error) {
       // Handle any errors that occurred during the upload or database operations
@@ -175,9 +177,9 @@ const KYCController = {
       });
 
       // Clear the cache
-      await client.del(cacheKey);
+      await client.del(cacheKey, cacheKey + "-" + kycExists.userId);
 
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
@@ -202,8 +204,8 @@ const KYCController = {
           isActive: false,
         },
       });
-      await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await client.del([cacheKey, cacheKey + "-" + kycExists.userId]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} kyc`, error);
@@ -242,8 +244,8 @@ const KYCController = {
           profile,
         },
       });
-      await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await client.del([cacheKey, cacheKey + "-" + kycExists.userId]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} profile kyc`, error);
@@ -306,8 +308,8 @@ const KYCController = {
         where: { id },
         data: { docImage: docImageList },
       });
-      await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await client.del([cacheKey, cacheKey + "-" + kycExists.userId]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} docImage kyc`, error);
@@ -315,20 +317,35 @@ const KYCController = {
   },
   async SelectAll(req, res) {
     try {
-      let kyc = await CacheAndRetrieveUpdatedData(cacheKey, model);
-      return SendSuccess(res, `${EMessage.selectAllSuccess}`, kyc);
+      let kyc = await CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      return SendSuccess(res, `${EMessage.fetchAllSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} docImage kyc`, error);
     }
   },
   async SelectOne(req, res) {
     try {
+      // await client.del(cacheKey);
       const id = req.params.id;
       const kyc = await FindKYCById(id);
       if (!kyc) {
         return SendError(res, 404, `${EMessage.notFound} KYC with id: ${id}`);
       }
       return SendSuccess(res, `${EMessage.selectAllSuccess}`, kyc);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.errorFetchingOne} docImage kyc`, error);
+    }
+  },
+  async SelectByUserId(req, res) {
+    try {
+      const id = req.params.id;
+      
+      where = {
+        isActive: true,
+        userId: id,
+      };
+      let kyc = await CacheAndRetrieveUpdatedData(cacheKey + "-" + id, model, where);
+      return SendSuccess(res, `${EMessage.fetchAllSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingOne} docImage kyc`, error);
     }

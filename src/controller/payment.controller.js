@@ -14,6 +14,7 @@ import { DataExist, ValidatePayment } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 const cacheKey = "payments";
 const model = "payment";
+let where = { isActive: true };
 let select;
 const PaymentController = {
   async Insert(req, res) {
@@ -41,7 +42,7 @@ const PaymentController = {
           qr_Image: imgUrl,
         },
       });
-      await CacheAndInsertData(cacheKey, model, payment);
+      await CacheAndInsertData(cacheKey, model, where, payment, select);
 
       SendCreate(res, `${EMessage.insertSuccess}`, payment);
     } catch (error) {
@@ -68,7 +69,7 @@ const PaymentController = {
         data,
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} payment`, error);
@@ -101,7 +102,7 @@ const PaymentController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} payment image`, error);
@@ -125,7 +126,7 @@ const PaymentController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} payment`, error);
@@ -133,7 +134,7 @@ const PaymentController = {
   },
   async SelectAll(req, res) {
     try {
-      const payment = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const payment = await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.selectAllSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} payment`, error);
@@ -159,9 +160,9 @@ const PaymentController = {
   async SelectByIsPublic(req, res) {
     try {
       const { isPublic } = req.body;
-      const data = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      const data = await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       const payment = data.filter((item) => item.isPublic === true);
-      SendSuccess(res, `${EMessage.selectAllSuccess}`, payment);
+      SendSuccess(res, `${EMessage.fetchAllSuccess} by isPublic`, payment);
     } catch (error) {
       SendErrorCatch(
         res,

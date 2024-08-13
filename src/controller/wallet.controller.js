@@ -16,6 +16,7 @@ import {
 import { DataExist, ValidateWallet } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 let cacheKey = "wallets";
+let where = { isActive: true };
 const model = "wallet";
 let select = {
   id: true,
@@ -49,13 +50,17 @@ const WalletController = {
         FindPromotionId(promotionId),
       ]);
       if (!userExists) {
-        return SendError(res, 404, `${EMessage.notFound} user with id:${id}`);
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} user with id:${userId}`
+        );
       }
       if (!promotionExists) {
         return SendError(
           res,
           404,
-          `${EMessage.notFound} promotion with id:${id}`
+          `${EMessage.notFound} promotion with id:${promotionId}`
         );
       }
       const wallet = await prisma.wallet.create({
@@ -65,8 +70,8 @@ const WalletController = {
         },
         select,
       });
-      await client.del(cacheKey + walletExists.userId);
-      await CacheAndInsertData(cacheKey, model, wallet);
+      await client.del(cacheKey + userId);
+      await CacheAndInsertData(cacheKey, model, where, wallet, select);
       SendCreate(res, `${EMessage.insertSuccess} wallet`, wallet);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.insertFailed} wallet`, error);
@@ -119,7 +124,7 @@ const WalletController = {
 
       // Clear the cache
       await client.del(cacheKey, cacheKey + walletExists.userId);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
 
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess}`, wallet);
@@ -144,7 +149,7 @@ const WalletController = {
         data: { isActive: false },
       });
       await client.del(cacheKey, cacheKey + walletExists.userId);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, wallet);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} wallet`, error);
@@ -152,7 +157,7 @@ const WalletController = {
   },
   async SelectAll(req, res) {
     try {
-      const wallet = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      const wallet = await CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
       SendSuccess(res, `${EMessage.fetchAllSuccess}`, wallet);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} wallet`, error);
@@ -180,6 +185,7 @@ const WalletController = {
       const wallet = await CacheAndRetrieveUpdatedData(
         cacheKey + userId,
         model,
+        { isActive: true, userId },
         select
       );
       SendSuccess(res, `${EMessage.fetchOneSuccess}`, wallet);

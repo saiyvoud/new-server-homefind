@@ -15,6 +15,7 @@ import prisma from "../util/prismaClient.js";
 let cacheKey = "banners";
 const model = "banner";
 let select;
+let where = { isActive: true };
 const BannerController = {
   async Insert(req, res) {
     try {
@@ -46,8 +47,8 @@ const BannerController = {
         },
       });
 
-      await CacheAndInsertData(cacheKey, model, banner);
-      await client.del("banners-isPublice");
+      await CacheAndInsertData(cacheKey, model, where, banner);
+      await client.del(cacheKey + "-IsPublice");
 
       return SendCreate(res, `${EMessage.insertSuccess}`, banner);
     } catch (error) {
@@ -70,8 +71,8 @@ const BannerController = {
         },
         data,
       });
-      await client.del(cacheKey, "banners-isPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await client.del(cacheKey, cacheKey + "-IsPublice");
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} banner`, error);
@@ -94,8 +95,8 @@ const BannerController = {
         where: { id },
         data: { isPublice: status },
       });
-      await client.del(cacheKey, "banners-isPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await client.del(cacheKey, cacheKey + "-IsPublice");
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
 
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
@@ -134,8 +135,8 @@ const BannerController = {
         data: { image: img_url },
       });
 
-      await client.del(cacheKey, "banners-isPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await client.del(cacheKey, cacheKey + "-IsPublice");
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.updateSuccess} image banner`, banner);
     } catch (error) {
       return SendErrorCatch(
@@ -159,8 +160,8 @@ const BannerController = {
         data: { isActive: false },
       });
       // delete cached client  banners and banners_id
-      await client.del(cacheKey, "banners-isPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await client.del(cacheKey, cacheKey + "-IsPublice");
+      CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.deleteSuccess} banner`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.deleteFailed} banner`, error);
@@ -190,29 +191,17 @@ const BannerController = {
 
   async SelByIsPublice(req, res) {
     try {
-      const cacheKey = "banners-isPublice";
-      const cachedData = await client.get(cacheKey);
+      cacheKey = cacheKey + "-IsPublice";
 
-      if (!cachedData) {
-        const banner = await prisma.banner.findMany({
-          where: {
-            isActive: true,
-            isPublic: true,
-          },
-          orderBy: { createAt: "desc" },
-        });
-        await client.set(cacheKey, JSON.stringify(banner), "EX", 3600);
-        return SendSuccess(
-          res,
-          "Successfully fetched isPublic records banner",
-          banner
-        );
-      }
+      let banner = await CacheAndRetrieveUpdatedData(cacheKey, model, {
+        isActive: true,
+        isPublic: true,
+      });
 
       return SendSuccess(
         res,
         "Successfully fetched isPublic records banner",
-        JSON.parse(cachedData)
+        banner
       );
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} banner`, error);

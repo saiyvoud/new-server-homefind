@@ -45,7 +45,8 @@ const checkDatabaseConnection = async () => {
 
 
 
-// await client.del("users");
+// await client.del("wallets");
+
 
 // const user = await redis.get("users");
 // console.log('user :>> ', user);

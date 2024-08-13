@@ -21,6 +21,7 @@ import { DataExist, ValidateOrder } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 let cacheKey = "orders";
 const model = "order";
+let where = { isActive: true };
 let select = {
   id: true,
   userId: true,
@@ -91,15 +92,18 @@ const OrderController = {
       if (typeof totalPrice !== "number") {
         totalPrice = parseFloat(totalPrice);
       }
+      let promise = [
+        FindUserById(userId),
+        FindServiceById(serviceId),
+        FindPaymentById(paymentId),
+      ];
 
+      if (promotionId) {
+        promise.push(FindPromotionId(promotionId));
+      }
       // Check if related entities exist
       const [userExists, serviceExists, paymentExists, promotionExists] =
-        await Promise.all([
-          FindUserById(userId),
-          FindServiceById(serviceId),
-          FindPaymentById(paymentId),
-          FindPromotionId(promotionId),
-        ]);
+        await Promise.all(promise);
 
       // Identify and report which related entity does not exist
       if (
@@ -152,8 +156,8 @@ const OrderController = {
       });
 
       // Cache the order and send a success response
-      await client.del(cacheKey + userId);
-      CacheAndInsertData(cacheKey, model, order, select);
+      await client.del([cacheKey + userId, cacheKey + serviceId]);
+      CacheAndInsertData(cacheKey, model, where, order, select);
       SendCreate(res, `${EMessage.insertSuccess}`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.insertFailed} order`, error);
@@ -270,9 +274,14 @@ const OrderController = {
         data,
       });
 
+      // console.log("object :>> ", cacheKey, cacheKey + orderExists.userId);
       // Clear the cache
-      await client.del(cacheKey, cacheKey + orderExists.userId);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      await client.del([
+        cacheKey,
+        cacheKey + orderExists.userId,
+        cacheKey + orderExists.serviceId,
+      ]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
@@ -305,8 +314,12 @@ const OrderController = {
         where: { id },
         data: { status },
       });
-      await client.del(cacheKey, cacheKey + orderExists.userId);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      await client.del([
+        cacheKey,
+        cacheKey + orderExists.userId,
+        cacheKey + orderExists.serviceId,
+      ]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order  status`, error);
@@ -342,8 +355,13 @@ const OrderController = {
         where: { id },
         data: { billQR: img_url },
       });
-      await client.del(cacheKey, cacheKey + orderExists.userId);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+
+      await client.del([
+        cacheKey,
+        cacheKey + orderExists.userId,
+        cacheKey + orderExists.serviceId,
+      ]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order billQR`, error);
@@ -360,8 +378,12 @@ const OrderController = {
         where: { id },
         data: { isActive: false },
       });
-      await client.del(cacheKey, cacheKey + orderExists.userId);
-      CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      await client.del([
+        cacheKey,
+        cacheKey + orderExists.userId,
+        cacheKey + orderExists.serviceId,
+      ]);
+      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.deleteSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} order`, error);
@@ -382,7 +404,12 @@ const OrderController = {
   },
   async SelectAll(req, res) {
     try {
-      const order = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      const order = await CacheAndRetrieveUpdatedData(
+        cacheKey,
+        model,
+        where,
+        select
+      );
       SendSuccess(res, `${EMessage.fetchAllSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} order`, error);
@@ -395,6 +422,7 @@ const OrderController = {
       const order = await CacheAndRetrieveUpdatedData(
         cacheKey + userId,
         model,
+        { isActive: true, userId },
         select
       );
       SendSuccess(res, `${EMessage.fetchAllSuccess} order by userId `, order);
@@ -406,16 +434,16 @@ const OrderController = {
       );
     }
   },
-  async SelectByserviceId(req, res) {
+  async SelectByservicesId(req, res) {
     try {
-      const serviceId = req.params.serviceId;
-      let order;
-      const cachedData = await client.get(serviceId);
-      if (cachedData){
-       order=await prisma.order.findMany({
-        where:{serviceId}
-       })
-      }
+      const servicesId = req.params.servicesId;
+
+      const order = await CacheAndRetrieveUpdatedData(
+        cacheKey + servicesId,
+        model,
+        { isActive: true, serviceId: servicesId },
+        select
+      );
       SendSuccess(res, `${EMessage.fetchAllSuccess}  `, order);
     } catch (error) {
       SendErrorCatch(
