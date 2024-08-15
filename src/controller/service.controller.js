@@ -565,6 +565,7 @@ const ServiceController = {
       const service = await CacheAndRetrieveUpdatedData(
         cacheKey,
         model,
+        where,
         select
       );
       SendSuccess(res, `${EMessage.fetchAllSuccess} service`, service);
