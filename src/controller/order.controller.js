@@ -33,15 +33,11 @@ let select = {
   billQR: true,
   createAt: true,
   updateAt: true,
+  service: true,
+  status: true,
   service: {
-    select: {
-      coverImage: true,
-      view: true,
-      category: {
-        select: {
-          title: true,
-        },
-      },
+    include: {
+      status: true,
     },
   },
   promotion: {

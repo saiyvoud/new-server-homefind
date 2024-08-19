@@ -14,9 +14,13 @@ enum UserType {
 }
 
 enum StatusType {
-  pending
-  success
-  cancel
+  avilable
+  reserved
+  approvedByAdmin
+  approvedByPoster
+  inProgress
+  completed
+  cancelled
 }
 
 model User {
@@ -68,7 +72,7 @@ model Order {
   totalPrice   Float
   paymentId    String     @db.VarChar(36)
   billQR       String
-  status       StatusType @default(pending)
+  status       StatusType @default(avilable)
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   promotion    Promotion? @relation(fields: [promotionId], references: [id], onDelete: SetNull)
   service      Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)

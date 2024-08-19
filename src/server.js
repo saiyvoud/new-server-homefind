@@ -60,7 +60,8 @@ const checkDatabaseConnection = async () => {
   }
 };
 
-// await client.del("wallets");
+await client.del("orders");
+
 
 // const user = await redis.get("users");
 // console.log('user :>> ', user);
