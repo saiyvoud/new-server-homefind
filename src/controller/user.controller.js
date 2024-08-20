@@ -141,7 +141,12 @@ export const UserControlller = {
   },
   async SelectAll(req, res) {
     try {
-      const user = await CacheAndRetrieveUpdatedData(cacheKey, model, select);
+      const user = await CacheAndRetrieveUpdatedData(
+        cacheKey,
+        model,
+        where,
+        select
+      );
       return SendSuccess(res, `${EMessage.fetchAllSuccess} user`, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} user`, error);
@@ -417,7 +422,7 @@ export const UserControlller = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       return SendSuccess(res, EMessage.updateSuccess, user);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} user `, error);
@@ -446,7 +451,7 @@ export const UserControlller = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} user with id ${user.id}`);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} User KYC status`, error);
@@ -466,7 +471,7 @@ export const UserControlller = {
         data: { isActive: false },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       return SendSuccess(
         res,
         `${EMessage.deleteSuccess} user with id ${user.id}`

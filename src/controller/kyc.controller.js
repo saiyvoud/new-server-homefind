@@ -182,7 +182,7 @@ const KYCController = {
       // Clear the cache
       await client.del(cacheKey, cacheKey + "-" + kycExists.userId);
 
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
@@ -208,7 +208,7 @@ const KYCController = {
         },
       });
       await client.del([cacheKey, cacheKey + "-" + kycExists.userId]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} kyc`, error);
@@ -248,7 +248,7 @@ const KYCController = {
         },
       });
       await client.del([cacheKey, cacheKey + "-" + kycExists.userId]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, kyc);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} profile kyc`, error);

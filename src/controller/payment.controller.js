@@ -69,7 +69,7 @@ const PaymentController = {
         data,
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+    await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} payment`, error);
@@ -102,7 +102,7 @@ const PaymentController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+    await   CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} payment image`, error);
@@ -126,7 +126,7 @@ const PaymentController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+    await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, payment);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} payment`, error);

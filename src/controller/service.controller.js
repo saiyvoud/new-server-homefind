@@ -381,7 +381,7 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
 
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} service`, service);
@@ -428,7 +428,7 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service coverImage`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service coverImage`, error);
@@ -490,7 +490,7 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service images`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service images`, error);
@@ -529,7 +529,7 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+     await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service `, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
@@ -557,7 +557,8 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+
       SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} service`, error);

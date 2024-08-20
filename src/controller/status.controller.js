@@ -54,7 +54,7 @@ const StatusController = {
         data: data,
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model,where,select);
+     await CacheAndRetrieveUpdatedData(cacheKey, model,where,select);
       SendSuccess(res, `${EMessage.updateSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} status`, error);
@@ -71,7 +71,7 @@ const StatusController = {
         data: { isActive: false },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model,where,select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model,where,select);
       return SendSuccess(res, `${EMessage.deleteSuccess} status`, status);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} status`, error);

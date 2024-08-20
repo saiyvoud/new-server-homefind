@@ -132,7 +132,8 @@ const ReviewController = {
         cacheKey + "-u-" + reviewExists.userId,
         cacheKey + "-o-" + reviewExists.orderId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      
       // ส่ง response ที่สำเร็จ
       return SendSuccess(res, `${EMessage.updateSuccess}`, review);
     } catch (error) {
@@ -158,7 +159,7 @@ const ReviewController = {
         cacheKey + "-u-" + reviewExists.userId,
         cacheKey + "-o-" + reviewExists.orderId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+     await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       return SendSuccess(res, `${EMessage.deleteSuccess}`, review);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.deleteFailed} review`, error);

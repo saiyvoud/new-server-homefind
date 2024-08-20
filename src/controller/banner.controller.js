@@ -72,7 +72,7 @@ const BannerController = {
         data,
       });
       await client.del(cacheKey, cacheKey + "-IsPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} banner`, error);
@@ -96,7 +96,7 @@ const BannerController = {
         data: { isPublice: status },
       });
       await client.del(cacheKey, cacheKey + "-IsPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
 
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
@@ -136,7 +136,7 @@ const BannerController = {
       });
 
       await client.del(cacheKey, cacheKey + "-IsPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await   CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.updateSuccess} image banner`, banner);
     } catch (error) {
       return SendErrorCatch(
@@ -161,7 +161,7 @@ const BannerController = {
       });
       // delete cached client  banners and banners_id
       await client.del(cacheKey, cacheKey + "-IsPublice");
-      CacheAndRetrieveUpdatedData(cacheKey, model, where);
+    await   CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.deleteSuccess} banner`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.deleteFailed} banner`, error);

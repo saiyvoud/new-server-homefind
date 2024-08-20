@@ -63,7 +63,7 @@ const CategoryController = {
         data,
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await   CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -93,7 +93,7 @@ const CategoryController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -114,7 +114,7 @@ const CategoryController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.deleteSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed}`, error);

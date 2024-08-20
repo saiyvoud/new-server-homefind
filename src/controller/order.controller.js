@@ -277,7 +277,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
@@ -315,7 +315,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await   CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order  status`, error);
@@ -357,7 +357,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order billQR`, error);
@@ -379,7 +379,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.deleteSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} order`, error);

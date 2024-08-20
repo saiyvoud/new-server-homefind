@@ -80,7 +80,7 @@ const PromotionController = {
       });
 
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
+    await  CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
       SendSuccess(res, `${EMessage.updateSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} promotion`, error);
@@ -104,7 +104,7 @@ const PromotionController = {
         },
       });
       await client.del(cacheKey);
-      CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
+     await  CacheAndRetrieveUpdatedData(cacheKey, model,where, select);
       SendSuccess(res, `${EMessage.deleteSuccess}`, promotion);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} promotion`, error);
