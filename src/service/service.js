@@ -241,7 +241,7 @@ export const VerifyRefreshToken = (data) => {
         let decryptedPass = id.toString(CryptoJS.enc.Utf8);
         decryptedPass = decryptedPass.replace(/"/g, "");
 
-        const user = await FindUserByIdShowPassword(decryptedPass);
+        const user = await FindUserById(decryptedPass);
         console.log("user :>> ", user);
         if (!user) return reject("Error Verify Authorization");
         const [update, encrypId] = await Promise.all([
