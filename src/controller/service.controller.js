@@ -122,7 +122,10 @@ const ServiceController = {
           }`
         );
       }
-      const ImagesPromise = data.images.map((img) =>
+      const dataDocImageToList = !data.images.length
+      ? [data.images]
+      : data.images;
+      const ImagesPromise = dataDocImageToList.map((img) =>
         UploadImage(img.data).then((url) => {
           if (!url) {
             throw new Error("Upload Image failed");

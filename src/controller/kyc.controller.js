@@ -70,9 +70,12 @@ const KYCController = {
           `${EMessage.notFound} user with id: ${userId}`
         );
       }
+      const dataDocImageToList = !data.docImage.length
+      ? [data.docImage]
+      : data.docImage;
 
       // Create an array of promises for document image uploads
-      const docImagePromises = data.docImage.map((image) =>
+      const docImagePromises = dataDocImageToList.map((image) =>
         UploadImage(image.data).then((url) => {
           if (!url) {
             throw new Error("Upload Image failed");

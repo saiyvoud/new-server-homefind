@@ -56,7 +56,7 @@ const checkDatabaseConnection = async () => {
     setTimeout(async () => {
       console.log("Reconnecting to Database....");
       await checkDatabaseConnection();
-    }, 60000);
+    }, 10000);
   }
 };
 

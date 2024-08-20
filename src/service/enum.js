@@ -34,7 +34,11 @@ export const EMessage = {
 };
 
 export const StatusType = {
-  pending: "pending",
-  success: "success",
-  cancel: "cancel",
+  avilable:"avilable",
+  reserved: "reserved",
+  approvedByAdmin: "approvedByAdmin",
+  approvedByPoster: "approvedByPoster",
+  inProgress:"inProgress",
+  completed:"completed",
+  cancelled:"cancelled"
 };
