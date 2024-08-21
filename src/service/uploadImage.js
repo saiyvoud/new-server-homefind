@@ -14,7 +14,7 @@ export const UploadImage = async (img, oldImg) => {
       const imgPath = `data:image/webp;base64,${base64}`;
       const cloudinaryUpload = await cloudinary.uploader.upload(imgPath, {
         public_id: `IMG_${Date.now()}`,
-        resource_type: "auto",
+        resource_type: "image",
         format: "webp",
       });
 

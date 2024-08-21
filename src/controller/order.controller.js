@@ -26,6 +26,12 @@ let select = {
   id: true,
   userId: true,
   serviceId: true,
+  firstname: true,
+  lastname: true,
+  phoneNumber: true,
+  village: true,
+  district: true,
+  province: true,
   paymentId: true,
   promotionId: true,
   bookingPrice: true,
@@ -64,11 +70,17 @@ const OrderController = {
 
       let {
         userId,
+        firstname,
+        lastname,
+        phoneNumber,
+        village,
+        district,
+        province,
         serviceId,
         paymentId,
-        promotionId,
         bookingPrice,
         totalPrice,
+        promotionId,
       } = req.body;
       const data = req.files;
 
@@ -147,6 +159,12 @@ const OrderController = {
           bookingPrice,
           totalPrice,
           billQR: img_url,
+          firstname,
+          lastname,
+          phoneNumber,
+          village,
+          district,
+          province,
         },
         select,
       });
@@ -277,7 +295,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       // Send success response
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
@@ -315,7 +333,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      await   CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order  status`, error);
@@ -357,7 +375,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} order billQR`, error);
@@ -379,7 +397,7 @@ const OrderController = {
         cacheKey + orderExists.userId,
         cacheKey + orderExists.serviceId,
       ]);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.deleteSuccess} order`, order);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} order`, error);

@@ -132,9 +132,27 @@ export const ValidateService = (data) => {
 };
 
 export const ValidateOrder = (data) => {
-  const { userId, serviceId, paymentId, bookingPrice, totalPrice } = data;
+  const {
+    userId,
+    firstname,
+    lastname,
+    phoneNumber,
+    village,
+    district,
+    province,
+    serviceId,
+    paymentId,
+    bookingPrice,
+    totalPrice,
+  } = data;
   return validateData({
     userId,
+    firstname,
+    lastname,
+    phoneNumber,
+    village,
+    district,
+    province,
     serviceId,
     paymentId,
     bookingPrice,
