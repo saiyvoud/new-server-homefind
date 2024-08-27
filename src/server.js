@@ -59,9 +59,7 @@ const checkDatabaseConnection = async () => {
     }, 10000);
   }
 };
-
-// await client.del("orders");
-
+await client.flushDb();
 
 // const user = await redis.get("users");
 // console.log('user :>> ', user);
