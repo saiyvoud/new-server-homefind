@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // or "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  user
+  admin
+  supperadmin
+}
+
+enum StatusType {
+  reserved
+  approvedByAdmin
+  approvedByPoster
+  inProgress
+  bookerConfirm
+  posterConfirm
+  bookerReviewed
+  cancelled
+}
+
+model User {
+  id           String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive     Boolean   @default(true) @db.Boolean
+  username     String
+  phoneNumber  String
+  email        String
+  password     String
+  profile      String    @default("")
+  kyc          Boolean   @default(false)
+  role         UserType  @default(user)
+  loginversion Int       @default(1)
+  createAt     DateTime  @default(now())
+  updateAt     DateTime  @updatedAt
+  Kyc          Kyc[]
+  Wallet       Wallet[]
+  Review       Review[]
+  Service      Service[]
+  Order        Order[]
+
+  @@index([username])
+  @@index([phoneNumber])
+  @@index([email])
+}
+
+model Kyc {
+  id        String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive  Boolean  @default(true) @db.Boolean
+  userId    String   @db.Uuid
+  firstname String
+  lastname  String
+  age       Int
+  village   String
+  district  String
+  province  String
+  docType   String
+  docNo     String
+  docImage  String[]
+  profile   String
+  user      User     @relation(fields: [userId], references: [id])
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+}
+
+model Order {
+  id           String     @id @default(auto()) @map("_id") @db.Uuid
+  isActive     Boolean    @default(true) @db.Boolean
+  userId       String     @db.Uuid
+  serviceId    String     @db.Uuid
+  promotionId  String?    @db.Uuid
+  bookingPrice Float
+  totalPrice   Float
+  paymentId    String     @db.Uuid
+  billQR       String
+  status       StatusType @default(reserved)
+  user         User       @relation(fields: [userId], references: [id])
+  promotion    Promotion? @relation(fields: [promotionId], references: [id])
+  service      Service    @relation(fields: [serviceId], references: [id])
+  payment      Payment    @relation(fields: [paymentId], references: [id])
+  createAt     DateTime   @default(now())
+  updateAt     DateTime   @updatedAt
+  Review       Review[]
+}
+
+model Banner {
+  id        String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive  Boolean  @default(true) @db.Boolean
+  image     String
+  link_url  String
+  isPublice Boolean  @default(true) @db.Boolean
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+}
+
+model Promotion {
+  id        String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive  Boolean  @default(true) @db.Boolean
+  qty       Int
+  code      String
+  startTime DateTime
+  endTime   DateTime
+  isGiven   Boolean  @default(true) @db.Boolean
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+  Wallet    Wallet[]
+  Order     Order[]
+}
+
+model Payment {
+  id          String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive    Boolean  @default(true) @db.Boolean
+  bankName    String
+  accountName String
+  accountNo   String
+  qr_Image    String
+  isPublic    Boolean  @default(true) @db.Boolean
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt
+  Order       Order[]
+}
+
+model Review {
+  id       String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean  @default(true) @db.Boolean
+  userId   String   @db.Uuid
+  orderId  String   @db.Uuid
+  reason   String
+  star     Float
+  user     User     @relation(fields: [userId], references: [id])
+  order    Order    @relation(fields: [orderId], references: [id])
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Service {
+  id              String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive        Boolean  @default(true) @db.Boolean
+  posterId        String   @db.Uuid
+  categoryId      String   @db.Uuid
+  name            String
+  village         String
+  district        String
+  province        String
+  priceMonth      Float
+  priceYear       Float
+  priceCommission Float
+  detail          String
+  isShare         Boolean
+  view            Int      @default(1)
+  statusId        String   @db.Uuid
+  coverImage      String
+  images          String[]
+  user            User     @relation(fields: [posterId], references: [id])
+  category        Category @relation(fields: [categoryId], references: [id])
+  status          Status   @relation(fields: [statusId], references: [id])
+  createAt        DateTime @default(now())
+  updateAt        DateTime @updatedAt
+  Order           Order[]
+}
+
+model Status {
+  id       String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean   @default(true) @db.Boolean
+  name     String
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  Service  Service[]
+}
+
+model Category {
+  id       String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean   @default(true) @db.Boolean
+  title    String
+  icon     String
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  Service  Service[]
+}
+
+model Wallet {
+  id          String    @id @default(auto()) @map("_id") @db.Uuid
+  isActive    Boolean   @default(true) @db.Boolean
+  userId      String    @db.Uuid
+  promotionId String    @db.Uuid
+  status      Boolean   @default(true)
+  user        User      @relation(fields: [userId], references: [id])
+  promotion   Promotion @relation(fields: [promotionId], references: [id])
+  createAt    DateTime  @default(now())
+  updateAt    DateTime  @updatedAt
+}
+
+model Notification {
+  id       String   @id @default(auto()) @map("_id") @db.Uuid
+  isActive Boolean  @default(true) @db.Boolean
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
