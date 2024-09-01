@@ -73,7 +73,6 @@ export const CacheAndInsertData = async (cacheKey, model,where, newData, select)
   try {
     const cachedData = await client.get(cacheKey);
     let data;
-
     if (!cachedData) {
       data = await prisma[model].findMany({
         where,
@@ -96,9 +95,10 @@ export const CacheAndInsertData = async (cacheKey, model,where, newData, select)
 
 export const CacheAndRetrieveUpdatedData = async (cacheKey, model,where, select) => {
   try {
-    const cachedData = await client.get(cacheKey);
+    //const cachedData = await client.get(cacheKey);
     let data;
-    if (!cachedData) {
+    // if (!cachedData) {
+    if (true) {
       data = await prisma[model].findMany({
         where,
         select,

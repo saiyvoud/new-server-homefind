@@ -63,6 +63,7 @@ const order = `/order`;
 route.get(`${order}/selAll`, auth, admin, OrderController.SelectAll);
 route.get(`${order}/selOne/:id`, auth, OrderController.SelectOne);
 route.get(`${order}/selByUserId/:userId`, auth, OrderController.SelectByUserId);
+route.get(`${order}/selByPosterId/:posterId`, auth, OrderController.SelectByPosterId);
 route.get(`${order}/selByServicesId/:servicesId`, auth, OrderController.SelectByservicesId);
 
 route.post(`${order}/insert`, auth, OrderController.Insert);
@@ -128,6 +129,7 @@ route.post(`${service}/insert`,auth, ServiceController.Insert);
 
 route.put(`${service}/update/:id`,auth, ServiceController.Update);
 route.put(`${service}/updateIsShare/:id`,auth, ServiceController.UpdateIsShare);
+route.put(`${service}/updateStatusId/:id`,auth, ServiceController.UpdateStatusId);
 route.put(`${service}/updateCoverImage/:id`,auth,ServiceController.UpdateCoverImage);
 route.put(`${service}/updateImages/:id`,auth, ServiceController.UpdateImages);
 

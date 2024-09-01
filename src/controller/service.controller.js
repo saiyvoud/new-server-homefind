@@ -451,6 +451,47 @@ const ServiceController = {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
     }
   },
+
+  async UpdateStatusId(req, res) {
+    try {
+      const id = req.params.id;
+      let { statusId } = req.body;
+      if (!statusId) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: statusId is required`
+        );
+      }
+      const serviceExists = await FindServiceById(id);
+      if (!serviceExists) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} service with id:${id}`
+        );
+      }
+      const service = await prisma.service.update({
+        where: { id },
+        data: {
+          statusId,
+        },
+      });
+      await client.del([
+        cacheKey,
+        cacheKey + "-u-" + serviceExists.posterId,
+        cacheKey + "-ct-" + serviceExists.categoryId,
+      ]);
+     await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      SendSuccess(res, `${EMessage.updateSuccess} service `, service);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
+    }
+  },
+
+
+
+
   async Delete(req, res) {
     try {
       const id = req.params.id;

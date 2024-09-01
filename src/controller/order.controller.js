@@ -448,6 +448,32 @@ const OrderController = {
       );
     }
   },
+
+  async SelectByPosterId(req, res) {
+    try {
+      const posterId = req.params.posterId;
+
+      const order = await CacheAndRetrieveUpdatedData(
+        cacheKey + posterId,
+        model,
+        { 
+          isActive: true,
+          service: {
+            posterId: posterId
+          }
+         },
+        select
+      );
+      SendSuccess(res, `${EMessage.fetchAllSuccess} order by posterId `, order);
+    } catch (error) {
+      SendErrorCatch(
+        res,
+        `${EMessage.errorFetchingAll} order by posterId`,
+        error
+      );
+    }
+  },
+
   async SelectByservicesId(req, res) {
     try {
       const servicesId = req.params.servicesId;

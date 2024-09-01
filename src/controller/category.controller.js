@@ -127,7 +127,6 @@ const CategoryController = {
         model,
         where
       );
-      console.log("all category", category);
       return SendCreate(res, `${EMessage.fetchAllSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll}`, error);

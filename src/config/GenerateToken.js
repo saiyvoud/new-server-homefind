@@ -24,9 +24,11 @@ export const generateJWTtoken = async (data) => {
     };
     const token = jwt.sign(payload, SECRET_KEY, jwtData);
     const refreshToken = jwt.sign(payloodRefresh, SECRET_KEY, jwtRefreshData);
+    const expiresIn=jwt.verify(token,SECRET_KEY)
     const resultData = {
       token: token,
       refreshToken: refreshToken,
+      expiresIn:expiresIn.exp
     };
     return resultData;
   } catch (error) {

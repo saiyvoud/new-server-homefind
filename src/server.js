@@ -5,12 +5,24 @@ import fileUpload from "express-fileupload";
 import { EAPI, SERVER_PORT } from "./config/api.config.js";
 import prisma from "../src/util/prismaClient.js";
 
+import { createServer } from "http";
+import { Server } from "socket.io";
+
 import APIRouter from "./router/index.router.js";
 import client from "./Database/radis.js";
+import { setupSocket } from "./util/socketHandler.js";
 
 // Redis event listeners
 
 const app = express();
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*", // ຫຼື ກຳນົດ origin ທີ່ອະນຸຍາດ
+    methods: ["GET", "POST"]
+  }
+});
 
 // Middleware
 app.use(express.json({ limit: "500mb" }));
@@ -69,7 +81,15 @@ console.log("All Redis cache cleared");
 // console.log('categorys :>> ', user);
 // Start Server
 
-app.listen(SERVER_PORT, async () => {
+setupSocket(io);
+
+// app.listen(SERVER_PORT, async () => {
+//   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);
+//   console.log(`Server Already: ${SERVER_PORT}`);
+//   checkDatabaseConnection();
+// });
+
+httpServer.listen(SERVER_PORT, async () => {
   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);
   console.log(`Server Already: ${SERVER_PORT}`);
   checkDatabaseConnection();
