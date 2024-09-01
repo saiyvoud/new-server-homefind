@@ -44,6 +44,7 @@ let select = {
   service: {
     include: {
       status: true,
+      category: true,
     },
   },
   promotion: {

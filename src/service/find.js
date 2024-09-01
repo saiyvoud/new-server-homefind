@@ -122,12 +122,13 @@ export const FindOrderById = (id) => {
       billQR: true,
       createAt: true,
       updateAt: true,
+      status: true,
       service: {
         select: {
           id: true,
-          posterId: true,
-          categoryId: true,
-          statusId: true,
+          // posterId: true,
+          // categoryId: true,
+          // statusId: true,
           // user:{}
           name: true,
           village: true,

@@ -121,8 +121,8 @@ route.delete(`${review}/delete/:id`,auth, ReviewController.Delete);
 //-----------------------service------------------------------
 const service = `/service`;
 
-route.get(`${service}/selAll`,auth, ServiceController.SelectAll);
-route.get(`${service}/selOne/:id`,auth, ServiceController.SelectOne);
+route.get(`${service}/selAll`, ServiceController.SelectAll);
+route.get(`${service}/selOne/:id`, ServiceController.SelectOne);
 route.get(`${service}/selByUserId/:userId`,auth, ServiceController.SelectByUserId);
 
 route.post(`${service}/insert`,auth, ServiceController.Insert);
