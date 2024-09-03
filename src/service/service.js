@@ -1,5 +1,5 @@
 import CryptoJS from "crypto-js";
-import { SECRET_KEY } from "../config/api.config.js";
+import { KLimit, SECRET_KEY } from "../config/api.config.js";
 import jwt from "jsonwebtoken";
 import prisma from "../util/prismaClient.js";
 import { generateJWTtoken } from "../config/GenerateToken.js";
@@ -69,7 +69,13 @@ export const CheckUniqueElement = (a, b) => {
 //   }
 // };
 
-export const CacheAndInsertData = async (cacheKey, model,where, newData, select) => {
+export const CacheAndInsertData = async (
+  cacheKey,
+  model,
+  where,
+  newData,
+  select
+) => {
   try {
     const cachedData = await client.get(cacheKey);
     let data;
@@ -94,7 +100,12 @@ export const CacheAndInsertData = async (cacheKey, model,where, newData, select)
   }
 };
 
-export const CacheAndRetrieveUpdatedData = async (cacheKey, model,where, select) => {
+export const CacheAndRetrieveUpdatedData = async (
+  cacheKey,
+  model,
+  where,
+  select
+) => {
   try {
     const cachedData = await client.get(cacheKey);
     let data;
@@ -104,12 +115,12 @@ export const CacheAndRetrieveUpdatedData = async (cacheKey, model,where, select)
         select,
         orderBy: { createAt: "desc" },
       });
-      
+
       await client.set(cacheKey, JSON.stringify(data), "EX", 3600);
     } else {
       data = JSON.parse(cachedData);
     }
-  //  console.log('data :>> ', data);
+    //  console.log('data :>> ', data);
 
     return data;
   } catch (error) {
@@ -152,6 +163,46 @@ export const CacheAndRetrieveUpdatedData = async (cacheKey, model,where, select)
 //     throw error;
 //   }
 // };
+
+export const CachDataLimit = async (
+  key,
+  model,
+  where = { isActive: true },
+  page = 0,
+  select,
+
+  orderBy = {
+    createAt:"desc"
+  }
+) => {
+  // await redis.del(key);
+  const cachData = await client.get(key);
+  let data;
+  if (!cachData) {
+    console.log("model :>> ", model);
+    data = await prisma[model].findMany({
+      take: KLimit,
+      skip: KLimit * page,
+      where,
+      select,
+      orderBy,
+    });
+    const count = await prisma[model].count({
+      where,
+    });
+    data = {
+      count,
+      data,
+    };
+
+    await client.set(key, JSON.stringify(data), "EX", 3600);
+  } else {
+    data = JSON.parse(cachData);
+  }
+
+  return data;
+};
+
 export const Decrypt = (hash) => {
   return new Promise(async (resolve, reject) => {
     try {

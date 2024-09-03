@@ -1,4 +1,5 @@
 import client from "../Database/radis.js";
+import { DeleteCachedKey } from "../service/cach.deletekey.js";
 import { EMessage } from "../service/enum.js";
 import {
   FindCategoryById,
@@ -7,6 +8,7 @@ import {
   FindUserById,
 } from "../service/find.js";
 import {
+  CachDataLimit,
   CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
   CheckUniqueElement,
@@ -23,7 +25,7 @@ const model = "service";
 let select = {
   id: true,
   posterId: true,
-  // categoryId: true,
+  categoryId: true,
   // statusId: true,
   // user:{}
   name: true,
@@ -54,6 +56,17 @@ let select = {
       name: true,
     },
   },
+};
+
+const ResetCache = async ({ key, userkey, categorykey, isSharekey }) => {
+  await Promise.all([
+    DeleteCachedKey(key),
+    DeleteCachedKey(userkey),
+    DeleteCachedKey(categorykey),
+    DeleteCachedKey(isSharekey),
+    // DeleteCachedKey(searchkey),
+    // DeleteCachedKey(pricerangekey),
+  ]);
 };
 const ServiceController = {
   async Insert(req, res) {
@@ -123,8 +136,8 @@ const ServiceController = {
         );
       }
       const dataDocImageToList = !data.images.length
-      ? [data.images]
-      : data.images;
+        ? [data.images]
+        : data.images;
       const ImagesPromise = dataDocImageToList.map((img) =>
         UploadImage(img.data).then((url) => {
           if (!url) {
@@ -165,11 +178,13 @@ const ServiceController = {
         },
         select,
       });
-      await client.del(
-        cacheKey + "-u-" + posterId,
-        cacheKey + "-ct-" + categoryId
-      );
-      await CacheAndInsertData(cacheKey, model, where, service, select);
+
+      await ResetCache({
+        key,
+        userkey: posterId + cacheKey,
+        categorykey: categoryId + cacheKey,
+        isSharekey: isShare + cacheKey,
+      });
       SendSuccess(res, `${EMessage.insertSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.insertFailed} service`, error);
@@ -296,7 +311,6 @@ const ServiceController = {
 
       // Check if the service exists
       const serviceExists = await FindServiceById(id);
-      await client.del(cacheKey + "-ct-" + serviceExists.categoryId);
       if (!serviceExists) {
         return SendError(
           res,
@@ -375,15 +389,15 @@ const ServiceController = {
       });
       // console.log('object :>> ',  cacheKey + "-u-" + serviceExists.posterId);
 
-      // Clear the cache
-      await client.del([
-        cacheKey,
-        cacheKey + "-u-" + serviceExists.posterId,
-        cacheKey + "-ct-" + serviceExists.categoryId,
-      ]);
-      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
-
       // Send success response
+      await client.del(id + cacheKey);
+      await ResetCache({
+        key: cacheKey,
+        userkey: serviceExists.posterId + cacheKey,
+        categorykey: serviceExists.categoryId + cacheKey,
+        isSharekey: serviceExists.isShare + cacheKey,
+      });
+      console.log("object :>> ", serviceExists);
       SendSuccess(res, `${EMessage.updateSuccess} service`, service);
     } catch (error) {
       // Handle errors
@@ -423,12 +437,14 @@ const ServiceController = {
           coverImage: coverImage_url,
         },
       });
-      await client.del([
-        cacheKey,
-        cacheKey + "-u-" + serviceExists.posterId,
-        cacheKey + "-ct-" + serviceExists.categoryId,
-      ]);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await client.del(id + key);
+      await ResetCache({
+        key,
+        userkey: serviceExists.posterId + cacheKey,
+        categorykey: serviceExists.categoryId + cacheKey,
+        isSharekey: serviceExists.isShare + cacheKey,
+      });
+
       SendSuccess(res, `${EMessage.updateSuccess} service coverImage`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service coverImage`, error);
@@ -485,12 +501,14 @@ const ServiceController = {
         where: { id },
         data: { images: images_url_List },
       });
-      await client.del([
-        cacheKey,
-        cacheKey + "-u-" + serviceExists.posterId,
-        cacheKey + "-ct-" + serviceExists.categoryId,
-      ]);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await client.del(id + key);
+      await ResetCache({
+        key,
+        userkey: serviceExists.posterId + cacheKey,
+        categorykey: serviceExists.categoryId + cacheKey,
+        isSharekey: serviceExists.isShare + cacheKey,
+      });
+
       SendSuccess(res, `${EMessage.updateSuccess} service images`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service images`, error);
@@ -524,12 +542,14 @@ const ServiceController = {
           isShare,
         },
       });
-      await client.del([
-        cacheKey,
-        cacheKey + "-u-" + serviceExists.posterId,
-        cacheKey + "-ct-" + serviceExists.categoryId,
-      ]);
-     await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await client.del(id + key);
+      await ResetCache({
+        key,
+        userkey: serviceExists.posterId + cacheKey,
+        categorykey: serviceExists.categoryId + cacheKey,
+        isSharekey: serviceExists.isShare + cacheKey,
+      });
+
       SendSuccess(res, `${EMessage.updateSuccess} service `, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
@@ -552,13 +572,14 @@ const ServiceController = {
           isActive: false,
         },
       });
-      await client.del([
-        cacheKey,
-        cacheKey + "-u-" + serviceExists.posterId,
-        cacheKey + "-ct-" + serviceExists.categoryId,
-      ]);
-      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
 
+      await client.del(id + key);
+      await ResetCache({
+        key,
+        userkey: serviceExists.posterId + cacheKey,
+        categorykey: serviceExists.categoryId + cacheKey,
+        isSharekey: serviceExists.isShare + cacheKey,
+      });
       SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed} service`, error);
@@ -566,12 +587,23 @@ const ServiceController = {
   },
   async SelectAll(req, res) {
     try {
-      const service = await CacheAndRetrieveUpdatedData(
-        cacheKey,
+      let page = parseInt(req.query.page);
+      page = !page || page < 0 ? 0 : page - 1;
+      const service = await CachDataLimit(
+        cacheKey + "-" + page,
         model,
         where,
+        page,
         select
       );
+      CachDataLimit(
+        cacheKey + "-" + (page + 1),
+        model,
+        where,
+        page + 1,
+        select
+      );
+
       SendSuccess(res, `${EMessage.fetchAllSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} service`, error);
@@ -588,7 +620,7 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
-      SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
+      SendSuccess(res, `${EMessage.fetchOneSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingOne} service`, error);
     }
@@ -596,18 +628,24 @@ const ServiceController = {
   async SelectByUserId(req, res) {
     try {
       const userId = req.params.userId;
-      const service = await CacheAndRetrieveUpdatedData(
-        cacheKey + "-u-" + userId,
+      let page = parseInt(req.query.page);
+      page = !page || page < 0 ? 0 : page - 1;
+      const service = await CachDataLimit(
+        userId + cacheKey + "-" + page,
         model,
-        { posterId: userId, isActive: true },
+        { isActive: true, posterId: userId },
+        page,
         select
       );
-      // console.log("object :>> ", cacheKey + "-u-" + userId);
-      SendSuccess(
-        res,
-        `${EMessage.fetchAllSuccess} service by userId`,
-        service
+      CachDataLimit(
+        userId + cacheKey + "-" + (page + 1),
+        model,
+        { isActive: true, posterId: userId },
+        page + 1,
+        select
       );
+
+      SendSuccess(res, `${EMessage.fetchAllSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(
         res,
@@ -620,17 +658,25 @@ const ServiceController = {
   async SelectByCategoryId(req, res) {
     try {
       const categoryId = req.params.categoryId;
-      const service = await CacheAndRetrieveUpdatedData(
-        cacheKey + "-ct-" + categoryId,
+      let page = parseInt(req.query.page);
+      page = !page || page < 0 ? 0 : page - 1;
+      const service = await CachDataLimit(
+        categoryId + cacheKey + "-" + page,
         model,
-        { categoryId, isActive: true },
+        { isActive: true, categoryId },
+        page,
         select
       );
-      SendSuccess(
-        res,
-        `${EMessage.fetchAllSuccess} service by categoryId`,
-        service
+      CachDataLimit(
+        categoryId + cacheKey + "-" + (page + 1),
+        model,
+        { isActive: true, categoryId },
+        page + 1,
+        select
       );
+
+      console.log("categoryId + cacheKey :>> ", categoryId + cacheKey);
+      SendSuccess(res, `${EMessage.fetchAllSuccess} service`, service);
     } catch (error) {
       SendErrorCatch(
         res,
@@ -644,20 +690,23 @@ const ServiceController = {
     try {
       const isShareParam = req.params.isShare === "true"; // Convert param to boolean
 
-      // Retrieve cached data or query the database
-      const data = await CacheAndRetrieveUpdatedData(
-        cacheKey,
+      let page = parseInt(req.query.page);
+      page = !page || page < 0 ? 0 : page - 1;
+      const service = await CachDataLimit(
+        isShareParam + cacheKey + "-" + page,
         model,
-        where,
+        { isActive: true, isShare: isShareParam },
+        page,
+        select
+      );
+      CachDataLimit(
+        isShareParam + cacheKey + "-" + (page + 1),
+        model,
+        { isActive: true, isShare: isShareParam },
+        page + 1,
         select
       );
 
-      // Filter the data based on the isShare parameter
-      const service = data.filter((item) => item.isShare === isShareParam);
-
-      console.log("Filtered services by isShare:", service);
-
-      // Send the filtered services as a response
       SendSuccess(res, `${EMessage.fetchAllSuccess} by isShare`, service);
     } catch (error) {
       SendErrorCatch(
@@ -683,7 +732,7 @@ const ServiceController = {
 
       // Search and retrieve data, with caching
       const service = await CacheAndRetrieveUpdatedData(
-        cacheKey + "-address-" + encodeURIComponent(search), // Sanitize cache key
+        cacheKey + "-address-" + encodeURIComponent(search), // Sanitize cache cacheKey
         model,
         searchConditions,
         select
@@ -716,7 +765,7 @@ const ServiceController = {
 
       // Search and retrieve data, with caching
       const service = await CacheAndRetrieveUpdatedData(
-        cacheKey + "-s-" + encodeURIComponent(search), // Sanitize cache key
+        cacheKey + "-s-" + encodeURIComponent(search), // Sanitize cache cacheKey
         model,
         searchConditions,
         select
@@ -759,10 +808,10 @@ const ServiceController = {
         ],
       };
 
-      // Define cache key (consider hashing or encoding for safety)
+      // Define cache cacheKey (consider hashing or encoding for safety)
       const cacheKey = `services-by-price-${min}-${max}`;
       const service = await CacheAndRetrieveUpdatedData(
-        cacheKey, // Simplified cache key
+        cacheKey, // Simplified cache cacheKey
         model,
         searchConditions,
         select // Ensure 'select' is defined or passed properly

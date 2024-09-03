@@ -36,9 +36,9 @@ const findIdInCached = async (cacheKey, model, where, select) => {
       where,
       select,
     });
-   
+
     delete where.id;
-    console.log('object :>> ', where);
+    console.log("object :>> ", where);
     CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
     return result;
   }
@@ -50,6 +50,25 @@ const findIdInCached = async (cacheKey, model, where, select) => {
   const result = data.find((item) => item.id === where.id);
 
   return result || null; // Return the result or null if not found
+};
+const findIdInCachedId = async (cacheKey, model, where, select) => {
+  // Retrieve cached data from client
+  let cachedData = await client.get(cacheKey);
+
+  if (!cachedData) {
+    // If cache is empty, fetch data from the database
+    const result = await prisma[model].findFirst({
+      where,
+      select,
+    });
+
+    await client.set(cacheKey, JSON.stringify(result), "EX", 3600);
+    return result;
+  }
+
+  // Parse cached data
+  const data = JSON.parse(cachedData);
+  return data || null; // Return the result or null if not found
 };
 
 export const ExistingUser = ({ username, phoneNumber, email }) => {
@@ -173,14 +192,14 @@ export const FindReviewById = (id) => {
 };
 
 export const FindServiceById = (id) => {
-  return findIdInCached(
-    "services",
+  return findIdInCachedId(
+    id + "services",
     "service",
     { id, isActive: true },
     {
       id: true,
       posterId: true,
-      // categoryId: true,
+      categoryId: true,
       // statusId: true,
       // user:{}
       name: true,

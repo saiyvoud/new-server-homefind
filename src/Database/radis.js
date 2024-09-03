@@ -4,7 +4,7 @@ import { REDIS_HOST, REDIS_PORT } from "../config/api.config.js"; // Adjust path
 const client = redis.createClient({
   //  url: `redis://${REDIS_HOST || "redis"}:${REDIS_PORT || 6379}`,
   // url:`redis://red-cqosh2g8fa8c73c1i82g:6379`
-  url:REDIS_HOST
+  url: REDIS_HOST,
 });
 
 client.on("error", (err) => {
