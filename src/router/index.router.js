@@ -132,6 +132,7 @@ route.put(`${service}/updateIsShare/:id`,auth, ServiceController.UpdateIsShare);
 route.put(`${service}/updateStatusId/:id`,auth, ServiceController.UpdateStatusId);
 route.put(`${service}/updateCoverImage/:id`,auth,ServiceController.UpdateCoverImage);
 route.put(`${service}/updateImages/:id`,auth, ServiceController.UpdateImages);
+route.put(`${service}/updateView/:id`, ServiceController.UpdateView);
 
 route.delete(`${service}/delete/:id`,auth, ServiceController.Delete);
 

@@ -45,6 +45,7 @@ let select = {
     include: {
       status: true,
       category: true,
+      user: true,
     },
   },
   promotion: {

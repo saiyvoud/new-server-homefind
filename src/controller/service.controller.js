@@ -36,6 +36,7 @@ let select = {
   detail: true,
   isShare: true,
   images: true,
+  view: true,
   coverImage: true,
   createAt: true,
   updateAt: true,
@@ -109,7 +110,7 @@ const ServiceController = {
 
       console.log("Attempting to find category with ID:", categoryId);
       const categoryExists = await prisma.category.findUnique({
-        where: { id: categoryId }
+        where: { id: categoryId },
       });
 
       console.log("Category lookup result:", categoryExists);
@@ -127,16 +128,14 @@ const ServiceController = {
         return SendError(
           res,
           404,
-          `${EMessage.notFound} ${
-            !userExists ? "user" : "status"
-          } with id:${
+          `${EMessage.notFound} ${!userExists ? "user" : "status"} with id:${
             !userExists ? posterId : statusId
           }`
         );
       }
       const dataDocImageToList = !data.images.length
-      ? [data.images]
-      : data.images;
+        ? [data.images]
+        : data.images;
       const ImagesPromise = dataDocImageToList.map((img) =>
         UploadImage(img.data).then((url) => {
           if (!url) {
@@ -160,19 +159,19 @@ const ServiceController = {
       ]);
       console.log("data=>", {
         posterId,
-          categoryId,
-          name,
-          village,
-          district,
-          province,
-          priceMonth,
-          priceYear,
-          priceCommission,
-          detail,
-          isShare,
-          statusId,
-          images: images_url_list,
-          coverImage: coverImage_url,
+        categoryId,
+        name,
+        village,
+        district,
+        province,
+        priceMonth,
+        priceYear,
+        priceCommission,
+        detail,
+        isShare,
+        statusId,
+        images: images_url_list,
+        coverImage: coverImage_url,
       });
       const service = await prisma.service.create({
         data: {
@@ -221,6 +220,8 @@ const ServiceController = {
         );
       }
 
+      if (data.view && typeof data.view !== "number")
+        data.view = parseInt(data.view);
       // Prepare promises to check existence of related entities
       const promiseList = [];
       if (data.posterId) {
@@ -266,18 +267,15 @@ const ServiceController = {
       }
 
       // Convert prices to numbers if necessary
-      if (data.priceMonth && isNaN(parseFloat(data.priceMonth))) {
-        return SendError(res, 400, "Invalid priceMonth value");
+      if (data.priceMonth && typeof data.priceMonth !== "number") {
+        data.priceMonth = parseFloat(data.priceMonth);
       }
-      if (data.priceYear && isNaN(parseFloat(data.priceYear))) {
-        return SendError(res, 400, "Invalid priceYear value");
+      if (data.priceYear && typeof data.priceYear !== "number") {
+        data.priceYear = parseFloat(data.priceYear);
       }
-      if (data.priceCommission && isNaN(parseFloat(data.priceCommission))) {
-        return SendError(res, 400, "Invalid priceCommission value");
+      if (data.priceCommission && typeof data.priceCommission !== "number") {
+        data.priceCommission = parseFloat(data.priceCommission);
       }
-      data.priceMonth = parseFloat(data.priceMonth);
-      data.priceYear = parseFloat(data.priceYear);
-      data.priceCommission = parseFloat(data.priceCommission);
 
       // Convert isShare to boolean if necessary
       if (data.isShare && typeof data.isShare !== "boolean") {
@@ -306,7 +304,40 @@ const ServiceController = {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
     }
   },
+  async UpdateView(req, res) {
+    try {
+      const id = req.params.id;
+      const serviceExists = await FindServiceById(id);
+      
+      if (!serviceExists) {
+        return SendError(
+          res,
+          404,
+          `${EMessage.notFound} service with id:${id}`
+        );
+      }
 
+      console.log('serviceExits');
+      console.log(serviceExists);
+   
+      const service = await prisma.service.update({
+        where: { id },
+        data: {
+          view: serviceExists.view + 1,
+        },
+      });
+      await client.del([
+        cacheKey,
+        cacheKey + "-u-" + serviceExists.posterId,
+        cacheKey + "-ct-" + serviceExists.categoryId,
+      ]);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+
+      SendSuccess(res, `${EMessage.deleteSuccess} service`, service);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.deleteFailed} service`, error);
+    }
+  },
   async UpdateCoverImage(req, res) {
     try {
       const id = req.params.id;
@@ -344,7 +375,7 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service coverImage`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service coverImage`, error);
@@ -406,7 +437,7 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service images`, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service images`, error);
@@ -445,7 +476,7 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-     await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service `, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
@@ -482,15 +513,12 @@ const ServiceController = {
         cacheKey + "-u-" + serviceExists.posterId,
         cacheKey + "-ct-" + serviceExists.categoryId,
       ]);
-     await  CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service `, service);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} service`, error);
     }
   },
-
-
-
 
   async Delete(req, res) {
     try {

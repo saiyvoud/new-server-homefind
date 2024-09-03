@@ -20,8 +20,8 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: "*", // ຫຼື ກຳນົດ origin ທີ່ອະນຸຍາດ
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 // Middleware
@@ -75,7 +75,6 @@ const checkDatabaseConnection = async () => {
 // Delete all keys from Redis
 await client.flushAll();
 console.log("All Redis cache cleared");
-
 
 // const user = await client.get("categorys");
 // console.log('categorys :>> ', user);

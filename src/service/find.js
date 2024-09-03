@@ -219,9 +219,11 @@ export const FindServiceById = (id) => {
       detail: true,
       isShare: true,
       images: true,
+      view:true,
       coverImage: true,
       createAt: true,
       updateAt: true,
+      categoryId: true,
       user: {
         select: {
           username: true,
