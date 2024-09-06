@@ -316,9 +316,6 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
-
-      console.log('serviceExits');
-      console.log(serviceExists);
    
       const service = await prisma.service.update({
         where: { id },

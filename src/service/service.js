@@ -98,6 +98,8 @@ export const CacheAndRetrieveUpdatedData = async (cacheKey, model,where, select)
     //const cachedData = await client.get(cacheKey);
     let data;
     // if (!cachedData) {
+    console.log("pomostion");
+    console.log(`Cache Key: ${cacheKey}, Model: ${model}, Where: ${JSON.stringify(where)}, Select: ${JSON.stringify(select)}`);
     if (true) {
       data = await prisma[model].findMany({
         where,

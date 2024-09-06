@@ -137,10 +137,10 @@ const PromotionController = {
   async SelectByCode(req, res) {
     try {
       const code = req.params.code;
-      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, where, model, select);
+      const dataList = await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       const promotion = dataList.find((pro) => pro.code == code);
       if (!promotion) {
-        SendError(res, 404, `${EMessage.notFound} promotion with code ${code}`);
+        SendSuccess(res, `Select code promotion`, []);
         return;
       }
       SendSuccess(res, `Select code promotion`, promotion);

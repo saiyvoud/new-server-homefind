@@ -9,6 +9,7 @@ export function setupSocket(io) {
   
       // Handle messages within the room
       socket.on('statusChanged', (data) => {
+        console.log(`--------status changed orderId ${orderId}: ${data}---------`);
         // Broadcast the message to all clients in the same room
         io.to(orderId).emit('broadcast', `status changed orderId ${orderId}: ${data}`);
       });

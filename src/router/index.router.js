@@ -60,7 +60,7 @@ route.delete(`${kyc}/delete/:id`, auth, admin, KYCController.Delete);
 //-----------------------order------------------------------
 const order = `/order`;
 
-route.get(`${order}/selAll`, auth, admin, OrderController.SelectAll);
+route.get(`${order}/selAll`, auth, OrderController.SelectAll);
 route.get(`${order}/selOne/:id`, auth, OrderController.SelectOne);
 route.get(`${order}/selByUserId/:userId`, auth, OrderController.SelectByUserId);
 route.get(`${order}/selByPosterId/:posterId`, auth, OrderController.SelectByPosterId);
