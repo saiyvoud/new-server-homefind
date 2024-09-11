@@ -15,7 +15,7 @@ const route = express.Router();
 //-----------------------banner------------------------------
 
 const bannner = "/banner";
-route.get(`${bannner}/selAll`, auth, admin, BannerController.SelAll);
+route.get(`${bannner}/selAll`, auth, BannerController.SelAll);
 route.get(`${bannner}/selOne/:id`, BannerController.SelOne);
 route.get(`${bannner}/selByIsPublice`, BannerController.SelByIsPublice);
 
@@ -23,7 +23,7 @@ route.post(`${bannner}/insert`, BannerController.Insert);
 
 route.put(`${bannner}/update/:id`, BannerController.Update);
 route.put(`${bannner}/updateImage/:id`, BannerController.UpdateImage);
-route.put(`${bannner}/updateIsPublice`, BannerController.UpdateisPublice);
+route.put(`${bannner}/updateIsPublice/:id`, BannerController.UpdateisPublice);
 
 route.delete(`${bannner}/delete/:id`, BannerController.Delete);
 

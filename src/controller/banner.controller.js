@@ -20,8 +20,10 @@ const BannerController = {
   async Insert(req, res) {
     try {
       const validate = ValidateBanner(req.body);
-      const { link_url } = req.body;
+      const { link_url, name, isPublic } = req.body;
       const data = req.files;
+
+      console.log("body :>> ", req.body);
 
       if (validate.length > 0) {
         return SendError(
@@ -44,6 +46,8 @@ const BannerController = {
         data: {
           link_url,
           image: img_url,
+          name,
+          isPublic: (isPublic == "true" ) ? true : false,
         },
       });
 
@@ -59,7 +63,7 @@ const BannerController = {
   async Update(req, res) {
     try {
       const id = req.params.id;
-      const data = DataExist(req.body);
+      const { link_url, name, isPublic } = DataExist(req.body);
       const bannerExists = await FindBannerById(id);
 
       if (!bannerExists)
@@ -69,7 +73,11 @@ const BannerController = {
         where: {
           id,
         },
-        data,
+        data: {
+          link_url,
+          name,
+          isPublic: (isPublic == "true") ? true : false,
+        },
       });
       await client.del(cacheKey, cacheKey + "-IsPublice");
       await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
@@ -82,10 +90,7 @@ const BannerController = {
   async UpdateisPublice(req, res) {
     try {
       const id = req.params.id;
-      const status = req.body.status;
-
-      if (!status)
-        return SendError(res, 400, `${EMessage.pleaseInput}: status`);
+      const isPublic = req.body.isPublic;
 
       const bannerExists = await FindBannerById(id);
       if (!bannerExists)
@@ -93,7 +98,7 @@ const BannerController = {
 
       const banner = await prisma.banner.update({
         where: { id },
-        data: { isPublice: status },
+        data: { isPublic: (isPublic == "true") ? true : false },
       });
       await client.del(cacheKey, cacheKey + "-IsPublice");
       await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
@@ -170,7 +175,7 @@ const BannerController = {
 
   async SelAll(req, res) {
     try {
-      let bannerData = await CacheAndRetrieveUpdatedData(cacheKey, model);
+      let bannerData = await CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.fetchAllSuccess}`, bannerData);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} banner`, error);

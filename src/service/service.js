@@ -249,7 +249,7 @@ export const VerifyRefreshToken = (data) => {
         const [update, encrypId] = await Promise.all([
           prisma.user.update({
             where: { id: user.id },
-            data: { loginversion: user.loginversion + 1 },
+            data: { loginversion: (user?.loginversion || 0) + 1 },
           }),
           Endcrypt(user.id, SECRET_KEY),
         ]);

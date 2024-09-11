@@ -32,7 +32,7 @@ const PromotionController = {
         );
       }
 
-      let { qty, startTime, endTime } = req.body;
+      let { qty, name, startTime, endTime } = req.body;
       if (typeof qty !== "number") {
         qty = parseInt(qty, 10);
       }
@@ -42,6 +42,7 @@ const PromotionController = {
         data: {
           qty,
           code,
+          name,
           startTime,
           endTime,
         },
