@@ -26,11 +26,7 @@ let select = {
   updateAt: true,
   status: true,
   promotion: {
-    select: {
-      qty: true,
-      code: true,
-      isGiven: true,
-    },
+    include: {}
   },
 };
 const WalletController = {
