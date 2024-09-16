@@ -58,14 +58,22 @@ const PromotionController = {
     try {
       const id = req.params.id;
       let data = DataExist(req.body);
-      if (typeof data.qty !== "number") {
-        data.qty = parseInt(data.qty, 10);
+      if(data.qty) {
+        if (typeof data.qty !== "number") {
+          data.qty = parseInt(data.qty, 10);
+        }
       }
       if (data.isGiven) {
         data.isGiven =
           typeof data.isGiven === "boolean"
             ? data.isGiven
             : data.isGiven === "true";
+      }
+      if (data.isUsed) {
+        data.isUsed =
+          typeof data.isUsed === "boolean"
+            ? data.isUsed
+            : data.isUsed === "true";
       }
       const promotionExists = await FindPromotionId(id);
       if (!promotionExists) {

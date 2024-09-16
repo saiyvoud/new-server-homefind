@@ -116,6 +116,7 @@ model Promotion {
   startTime DateTime
   endTime   DateTime
   isGiven   Boolean  @default(false)
+  isUsed    Boolean  @default(false)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
   Wallet    Wallet[]
