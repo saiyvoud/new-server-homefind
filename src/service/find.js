@@ -75,6 +75,7 @@ export const FindUserById = (id) => {
       phoneNumber: true,
       profile: true,
       kyc: true,
+      ban: true,
       role: true,
       createAt: true,
       updateAt: true,

@@ -175,6 +175,7 @@ route.post(`${user}/loginEmail`, userController.LoginEmail);
 
 route.put(`${user}/update/:id`,auth, userController.Update);
 route.put(`${user}/updateKYCStatu/:id`,auth, userController.UpdateKYCStatus);
+route.put(`${user}/updateBanStatus/:id`,auth, userController.UpdateBanStatus);
 route.put(`${user}/updateImage/:id`,auth, userController.UpdateImage);
 
 route.put(`${user}/changePassword/:id`,auth, userController.ChangePassword);

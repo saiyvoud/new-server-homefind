@@ -39,6 +39,7 @@ model User {
   email        String    @unique
   password     String
   profile      String    @default("")
+  ban          Boolean   @default(false)
   kyc          Boolean   @default(false)
   role         UserType  @default(user)
   loginversion Int       @default(1)
