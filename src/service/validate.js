@@ -16,8 +16,8 @@ export const DataExist = (data) => {
   return existDatas;
 };
 export const ValidateUser = (data) => {
-  const { username, email, password, phoneNumber } = data;
-  return validateData({ username, email, password, phoneNumber });
+  const { username, password, phoneNumber } = data;
+  return validateData({ username, password, phoneNumber });
 };
 
 export const ValidateLogin = (data) => {
@@ -33,6 +33,11 @@ export const ValidataLoginPhoneNumber = (data) => {
 export const ValidateLoginEmail = (data) => {
   const { email, password } = data;
   return validateData({ email, password });
+};
+
+export const ValidateLoginPhoneNumber = (data) => {
+  const { phoneNumber, password } = data;
+  return validateData({ phoneNumber, password });
 };
 
 export const ValidateChangePassword = (data) => {
@@ -51,13 +56,13 @@ export const ValidateStatus = (data) => {
 };
 
 export const ValidateBanner = (data) => {
-  const { link_url, name } = data;
-  return validateData({ link_url, name });
+  const { link_url } = data;
+  return validateData({ link_url });
 };
 
 export const ValidatePromotion = (data) => {
-  const { qty, name, startTime, endTime } = data;
-  return validateData({ qty, name, startTime, endTime });
+  const { qty, startTime, endTime } = data;
+  return validateData({ qty, startTime, endTime });
 };
 
 export const ValidateCategory = (data) => {
