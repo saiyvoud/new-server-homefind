@@ -42,11 +42,10 @@ route.delete(`${category}/delete/:id`, CategoryController.Delete);
 
 route.get(`${category}/search`, CategoryController.Search);
 
-
 //-----------------------banner------------------------------
 const kyc = "/kyc";
 route.get(`${kyc}/selAll`, auth, admin, KYCController.SelectAll);
-route.get(`${kyc}/selByUserId/:id`,auth,KYCController.SelectByUserId);
+route.get(`${kyc}/selByUserId/:id`, auth, KYCController.SelectByUserId);
 route.get(`${kyc}/selOne/:id`, auth, KYCController.SelectOne);
 
 route.post(`${kyc}/insert`, auth, KYCController.Insert);
@@ -63,7 +62,11 @@ const order = `/order`;
 route.get(`${order}/selAll`, auth, admin, OrderController.SelectAll);
 route.get(`${order}/selOne/:id`, auth, OrderController.SelectOne);
 route.get(`${order}/selByUserId/:userId`, auth, OrderController.SelectByUserId);
-route.get(`${order}/selByServicesId/:servicesId`, auth, OrderController.SelectByservicesId);
+route.get(
+  `${order}/selByServicesId/:servicesId`,
+  auth,
+  OrderController.SelectByservicesId
+);
 
 route.post(`${order}/insert`, auth, OrderController.Insert);
 
@@ -73,17 +76,26 @@ route.put(`${order}/updateBillQR/:id`, auth, OrderController.UpdateBillQR);
 
 route.delete(`${order}/delete/:id`, auth, OrderController.Delete);
 
-
 //-----------------------payment------------------------------
 const payment = `/payment`;
 route.get(`${payment}/selAll`, auth, PaymentController.SelectAll);
 route.get(`${payment}/selOne/:id`, auth, PaymentController.SelectOne);
-route.get(`${payment}/selByIsPublic`,auth,admin,PaymentController.SelectByIsPublic);
+route.get(
+  `${payment}/selByIsPublic`,
+  auth,
+  admin,
+  PaymentController.SelectByIsPublic
+);
 
 route.post(`${payment}/insert`, auth, admin, PaymentController.Insert);
 
 route.put(`${payment}/update/:id`, auth, admin, PaymentController.Update);
-route.put(`${payment}/updateImage/:id`,auth,admin,PaymentController.UpdateImage);
+route.put(
+  `${payment}/updateImage/:id`,
+  auth,
+  admin,
+  PaymentController.UpdateImage
+);
 
 route.delete(`${payment}/delete/:id`, auth, admin, PaymentController.Delete);
 
@@ -91,72 +103,99 @@ route.delete(`${payment}/delete/:id`, auth, admin, PaymentController.Delete);
 const promotion = `/promotion`;
 route.get(`${promotion}/selAll`, auth, PromotionController.SelAll);
 route.get(`${promotion}/selOne/:id`, auth, PromotionController.SelOne);
-route.get(`${promotion}/selByCode/:code`,  auth,  PromotionController.SelectByCode);
-route.get(`${promotion}/selByIsGiven/:isGiven`,auth,PromotionController.SelectByIsGiven);
+route.get(
+  `${promotion}/selByCode/:code`,
+  auth,
+  PromotionController.SelectByCode
+);
+route.get(
+  `${promotion}/selByIsGiven/:isGiven`,
+  auth,
+  PromotionController.SelectByIsGiven
+);
 
-route.post(`${promotion}/insert`,auth, PromotionController.Insert);
+route.post(`${promotion}/insert`, auth, PromotionController.Insert);
 
-route.put(`${promotion}/update/:id`,auth, PromotionController.Update);
+route.put(`${promotion}/update/:id`, auth, PromotionController.Update);
 
-route.delete(`${promotion}/delete/:id`,auth, PromotionController.Delete);
+route.delete(`${promotion}/delete/:id`, auth, PromotionController.Delete);
 
 //-----------------------review------------------------------
 const review = `/review`;
 
-route.get(`${review}/selAll`,auth, ReviewController.SelectAll);
-route.get(`${review}/selOne/:id`,auth, ReviewController.SelectOne);
-route.get(`${review}/selByUserId/:id`,auth,ReviewController.SelectByUserId);
-route.get(`${review}/selByOrderId/:id`,auth,ReviewController.SelectByOrderId);
+route.get(`${review}/selAll`, auth, ReviewController.SelectAll);
+route.get(`${review}/selOne/:id`, auth, ReviewController.SelectOne);
+route.get(`${review}/selByUserId/:id`, auth, ReviewController.SelectByUserId);
+route.get(`${review}/selByOrderId/:id`, auth, ReviewController.SelectByOrderId);
 
-route.post(`${review}/insert`,auth, ReviewController.Insert);
+route.post(`${review}/insert`, auth, ReviewController.Insert);
 
-route.put(`${review}/update/:id`,auth, ReviewController.Update);
+route.put(`${review}/update/:id`, auth, ReviewController.Update);
 
-route.delete(`${review}/delete/:id`,auth, ReviewController.Delete);
-
-
-
+route.delete(`${review}/delete/:id`, auth, ReviewController.Delete);
 
 //-----------------------service------------------------------
 const service = `/service`;
 
-route.get(`${service}/selAll`,auth, ServiceController.SelectAll);
-route.get(`${service}/selOne/:id`,auth, ServiceController.SelectOne);
-route.get(`${service}/selByUserId/:userId`,auth, ServiceController.SelectByUserId);
+route.get(`${service}/selAll`, auth, ServiceController.SelectAll);
+route.get(`${service}/selOne/:id`, auth, ServiceController.SelectOne);
+route.get(
+  `${service}/selByUserId/:userId`,
+  auth,
+  ServiceController.SelectByUserId
+);
 
-route.post(`${service}/insert`,auth, ServiceController.Insert);
+route.post(`${service}/insert`, auth, ServiceController.Insert);
 
-route.put(`${service}/update/:id`,auth, ServiceController.Update);
-route.put(`${service}/updateIsShare/:id`,auth, ServiceController.UpdateIsShare);
-route.put(`${service}/updateCoverImage/:id`,auth,ServiceController.UpdateCoverImage);
-route.put(`${service}/updateImages/:id`,auth, ServiceController.UpdateImages);
+route.put(`${service}/update/:id`, auth, ServiceController.Update);
+route.put(
+  `${service}/updateIsShare/:id`,
+  auth,
+  ServiceController.UpdateIsShare
+);
+route.put(
+  `${service}/updateCoverImage/:id`,
+  auth,
+  ServiceController.UpdateCoverImage
+);
+route.put(`${service}/updateImages/:id`, auth, ServiceController.UpdateImages);
 
-route.delete(`${service}/delete/:id`,auth, ServiceController.Delete);
+route.delete(`${service}/delete/:id`, auth, ServiceController.Delete);
 
-route.get(`${service}/selByCategoryId/:categoryId`,auth, ServiceController.SelectByCategoryId);
-route.get(`${service}/search`,auth, ServiceController.Search);
-route.get(`${service}/searchAddress`,auth, ServiceController.SearchAddress);
+route.get(
+  `${service}/selByCategoryId/:categoryId`,
+  auth,
+  ServiceController.SelectByCategoryId
+);
+route.get(`${service}/search`, auth, ServiceController.Search);
+route.get(`${service}/searchAddress`, auth, ServiceController.SearchAddress);
 
-route.get(`${service}/selByIsShare/:isShare`,auth,ServiceController.SelectByShare);
-route.get(`${service}/searchPriceRange`,auth, ServiceController.SelectByPriceRange);
+route.get(
+  `${service}/selByIsShare/:isShare`,
+  auth,
+  ServiceController.SelectByShare
+);
+route.get(
+  `${service}/searchPriceRange`,
+  auth,
+  ServiceController.SelectByPriceRange
+);
 //selct by  category id--
 // select by isshared--
 //search by name order by created--
 //search by v d p --
 // search between  price --
 
-
 //-----------------------status------------------------------
 const status = "/status";
 
-route.get(`${status}/selAll`, auth,StatusController.SelectAll);
-route.get(`${status}/selOne/:id`,auth, StatusController.SelectOne);
+route.get(`${status}/selAll`, auth, StatusController.SelectAll);
+route.get(`${status}/selOne/:id`, auth, StatusController.SelectOne);
 
-route.post(`${status}/insert`,auth, StatusController.Insert);
+route.post(`${status}/insert`, auth, StatusController.Insert);
 
-route.put(`${status}/update/:id`,auth, StatusController.Update);
-route.delete(`${status}/delete/:id`,auth, StatusController.Delete);
-
+route.put(`${status}/update/:id`, auth, StatusController.Update);
+route.delete(`${status}/delete/:id`, auth, StatusController.Delete);
 
 //-----------------------user------------------------------
 const user = `/user`;
@@ -169,27 +208,28 @@ route.post(`${user}/refreshToken`, userController.RefreshToken);
 route.post(`${user}/registor`, userController.Registor);
 route.post(`${user}/login`, userController.Login);
 route.post(`${user}/loginEmail`, userController.LoginEmail);
+route.post(`${user}/loginPhoneNumber`, userController.LoginPhoneNumber);
 
-route.put(`${user}/update/:id`,auth, userController.Update);
-route.put(`${user}/updateKYCStatu/:id`,auth, userController.UpdateKYCStatus);
-route.put(`${user}/updateImage/:id`,auth, userController.UpdateImage);
+route.put(`${user}/update/:id`, auth, userController.Update);
+route.put(`${user}/updateKYCStatu/:id`, auth, userController.UpdateKYCStatus);
+route.put(`${user}/updateImage/:id`, auth, userController.UpdateImage);
 
-route.put(`${user}/changePassword/:id`,auth, userController.ChangePassword);
+route.put(`${user}/changePassword/:id`, auth, userController.ChangePassword);
 
-route.delete(`${user}/delete/:id`,auth, userController.Delete);
+route.delete(`${user}/delete/:id`, auth, userController.Delete);
 
 //-----------------------wallet------------------------------
 
 const wallet = `/wallet`;
 
-route.get(`${wallet}/selAll`,auth, WalletController.SelectAll);
-route.get(`${wallet}/selOne/:id`,auth, WalletController.SelectOne);
-route.get(`${wallet}/selByUserId/:id`,auth, WalletController.SelectByUserId);
+route.get(`${wallet}/selAll`, auth, WalletController.SelectAll);
+route.get(`${wallet}/selOne/:id`, auth, WalletController.SelectOne);
+route.get(`${wallet}/selByUserId/:id`, auth, WalletController.SelectByUserId);
 
-route.post(`${wallet}/insert`, auth,WalletController.Insert);
+route.post(`${wallet}/insert`, auth, WalletController.Insert);
 
-route.put(`${wallet}/update/:id`,auth, WalletController.Update);
+route.put(`${wallet}/update/:id`, auth, WalletController.Update);
 
-route.delete(`${wallet}/delete/:id`,auth, WalletController.Delete);
+route.delete(`${wallet}/delete/:id`, auth, WalletController.Delete);
 
 export default route;

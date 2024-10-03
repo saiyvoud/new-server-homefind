@@ -22,6 +22,7 @@ import {
   ValidateChangePassword,
   ValidateLogin,
   ValidateLoginEmail,
+  ValidateLoginPhoneNumber,
   ValidateUser,
 } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
@@ -62,16 +63,16 @@ export const UserControlller = {
 
       // Check for existing user
       const existingUser = await ExistingUser(req.body);
-      const { username, email, password, phoneNumber } = req.body;
+      const { username, password, phoneNumber } = req.body;
 
       if (existingUser) {
-        if (existingUser.username === username) {
-          return SendError(
-            res,
-            400,
-            `${EMessage.userAlreadyExists} with username :${username}`
-          );
-        }
+        // if (existingUser.username === username) {
+        //   return SendError(
+        //     res,
+        //     400,
+        //     `${EMessage.userAlreadyExists} with username :${username}`
+        //   );
+        // }
         if (existingUser.phoneNumber === phoneNumber) {
           return SendError(
             res,
@@ -79,13 +80,13 @@ export const UserControlller = {
             `${EMessage.userAlreadyExists} with phoneNumber :${phoneNumber}`
           );
         }
-        if (existingUser.email === email) {
-          return SendError(
-            res,
-            400,
-            `${EMessage.userAlreadyExists} with email :${email}`
-          );
-        }
+        // if (existingUser.email === email) {
+        //   return SendError(
+        //     res,
+        //     400,
+        //     `${EMessage.userAlreadyExists} with email :${email}`
+        //   );
+        // }
       }
 
       // Encrypt password and create user
@@ -93,7 +94,7 @@ export const UserControlller = {
       const user = await prisma.user.create({
         data: {
           username,
-          email,
+          // email,
           password: hashPassword,
           phoneNumber,
         },
@@ -241,6 +242,65 @@ export const UserControlller = {
           res,
           404,
           EMessage.notFound + ` user with email: ${email}`
+        );
+      let passDecript = await Decrypt(user.password, SECRET_KEY);
+      let decryptedPass = passDecript.toString(CryptoJS.enc.Utf8);
+      decryptedPass = decryptedPass.replace(/"/g, "");
+      if (decryptedPass !== password)
+        return SendError(res, 400, "Password is not match");
+      const updateUser = await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: { loginversion: user.loginversion + 1 },
+        select: {
+          id: true,
+          isActive: true,
+          username: true,
+          email: true,
+          phoneNumber: true,
+          profile: true,
+          kyc: true,
+          role: true,
+          createAt: true,
+          updateAt: true,
+        },
+      });
+
+      const encrypId = await Endcrypt(user.id);
+      const dataJWT = {
+        id: encrypId,
+        loginversion: user.loginversion,
+      };
+      const token = await generateJWTtoken(dataJWT);
+      const result = Object.assign(
+        JSON.parse(JSON.stringify(updateUser)),
+        JSON.parse(JSON.stringify(token))
+      );
+      // await client.del(cacheKey);
+      return SendCreate(res, `${EMessage.loginSuccess}`, result);
+    } catch (error) {
+      return SendErrorCatch(res, `${EMessage.loginfall} user `, error);
+    }
+  },
+  async LoginPhoneNumber(req, res) {
+    try {
+      const validate = ValidateLoginPhoneNumber(req.body);
+      if (validate.length > 0)
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${validate.join(", ")}`
+        );
+      const { phoneNumber, password } = req.body;
+      const user = await prisma.user.findFirst({
+        where: { phoneNumber, isActive: true },
+      });
+      if (!user)
+        return SendError(
+          res,
+          404,
+          EMessage.notFound + ` user with phoneNumber: ${phoneNumber}`
         );
       let passDecript = await Decrypt(user.password, SECRET_KEY);
       let decryptedPass = passDecript.toString(CryptoJS.enc.Utf8);

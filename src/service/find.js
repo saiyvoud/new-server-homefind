@@ -71,10 +71,10 @@ const findIdInCachedId = async (cacheKey, model, where, select) => {
   return data || null; // Return the result or null if not found
 };
 
-export const ExistingUser = ({ username, phoneNumber, email }) => {
+export const ExistingUser = ({ phoneNumber }) => {
   return findFirst("user", {
     isActive: true,
-    OR: [{ username }, { phoneNumber }, { email }],
+    OR: [{ phoneNumber }],
   });
 };
 export const FindUserByIdShowPassword = (id) => {
