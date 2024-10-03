@@ -172,6 +172,7 @@ route.post(`${user}/refreshToken`, userController.RefreshToken);
 route.post(`${user}/registor`, userController.Registor);
 route.post(`${user}/login`, userController.Login);
 route.post(`${user}/loginEmail`, userController.LoginEmail);
+route.post(`${user}/loginPhoneNumber`, userController.LoginPhoneNumber);
 
 route.put(`${user}/update/:id`,auth, userController.Update);
 route.put(`${user}/updateKYCStatu/:id`,auth, userController.UpdateKYCStatus);

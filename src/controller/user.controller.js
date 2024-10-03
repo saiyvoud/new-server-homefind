@@ -44,6 +44,7 @@ let select = {
   phoneNumber: true,
   profile: true,
   kyc: true,
+  ban: true,
   role: true,
   createAt: true,
   updateAt: true,
@@ -202,6 +203,7 @@ export const UserControlller = {
           phoneNumber: true,
           profile: true,
           kyc: true,
+          ban: true,
           role: true,
           createAt: true,
           updateAt: true,
@@ -292,9 +294,9 @@ export const UserControlller = {
           400,
           `${EMessage.pleaseInput}: ${validate.join(", ")}`
         );
-      const { phoneNumber, password } = req.body;
+      const {  phoneNumber, password } = req.body;
       const user = await prisma.user.findFirst({
-        where: { phoneNumber, isActive: true },
+        where: {  phoneNumber, isActive: true },
       });
       if (!user)
         return SendError(
@@ -320,6 +322,7 @@ export const UserControlller = {
           phoneNumber: true,
           profile: true,
           kyc: true,
+          ban: true,
           role: true,
           createAt: true,
           updateAt: true,
@@ -515,6 +518,34 @@ export const UserControlller = {
       SendSuccess(res, `${EMessage.updateSuccess} user with id ${user.id}`);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed} User KYC status`, error);
+    }
+  },
+  async UpdateBanStatus(req, res) {
+    try {
+      const id = req.params.id;
+      let { ban } = req.body;
+      if (!ban)
+        return SendError(res, 400, `${EMessage.pleaseInput} : ban`);
+      if (typeof ban !== "boolean") {
+        ban = ban == "true" ? true : false;
+      }
+      const userExists = await FindUserById(id);
+      if (!userExists) {
+        return SendError(res, 404, `${EMessage.deleteFailed}`);
+      }
+      const user = await prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          ban: ban,
+        },
+      });
+      await client.del(cacheKey);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
+      SendSuccess(res, `${EMessage.updateSuccess} user with id ${user.id}`);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.updateFailed} User Ban status`, error);
     }
   },
   async Delete(req, res) {

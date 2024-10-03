@@ -14,23 +14,32 @@ enum UserType {
 }
 
 enum StatusType {
-  avilable
+  // avilable
+  // reserved
+  // approvedByAdmin
+  // approvedByPoster
+  // inProgress
+  // completed
+  // cancelled
   reserved
   approvedByAdmin
   approvedByPoster
   inProgress
-  completed
+  bookerConfirm
+  posterConfirm
+  bookerReviewed
   cancelled
 }
 
 model User {
   id           String    @id @default(uuid()) @db.VarChar(36)
   isActive     Boolean   @default(true)
-  username     String
-  phoneNumber  String
-  email        String?
+  username     String    
+  phoneNumber  String    
+  email        String?    
   password     String
   profile      String    @default("")
+  ban          Boolean   @default(false)
   kyc          Boolean   @default(false)
   role         UserType  @default(user)
   loginversion Int       @default(1)
@@ -78,7 +87,7 @@ model Order {
   totalPrice   Float
   paymentId    String     @db.VarChar(36)
   billQR       String
-  status       StatusType @default(avilable)
+  status       StatusType @default(reserved)
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   promotion    Promotion? @relation(fields: [promotionId], references: [id], onDelete: SetNull)
   service      Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
@@ -92,6 +101,7 @@ model Banner {
   id       String   @id @default(uuid()) @db.VarChar(36)
   isActive Boolean  @default(true)
   image    String
+  name     String
   link_url String
   isPublic Boolean  @default(true)
   createAt DateTime @default(now())
@@ -101,11 +111,13 @@ model Banner {
 model Promotion {
   id        String   @id @default(uuid()) @db.VarChar(36)
   isActive  Boolean  @default(true)
+  name      String?
   qty       Int
   code      String   @unique
   startTime DateTime
   endTime   DateTime
-  isGiven   Boolean  @default(true)
+  isGiven   Boolean  @default(false)
+  isUsed    Boolean  @default(false)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
   Wallet    Wallet[]
@@ -193,8 +205,6 @@ model Wallet {
   promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
   createAt    DateTime  @default(now())
   updateAt    DateTime  @updatedAt
-
-  @@unique([userId, promotionId])
 }
 
 model Notification {
