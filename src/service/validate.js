@@ -56,13 +56,13 @@ export const ValidateStatus = (data) => {
 };
 
 export const ValidateBanner = (data) => {
-  const { link_url } = data;
-  return validateData({ link_url });
+  const { link_url, name } = data;
+  return validateData({ link_url, name });
 };
 
 export const ValidatePromotion = (data) => {
-  const { qty, startTime, endTime } = data;
-  return validateData({ qty, startTime, endTime });
+  const { qty, name, startTime, endTime } = data;
+  return validateData({ qty, name, startTime, endTime });
 };
 
 export const ValidateCategory = (data) => {

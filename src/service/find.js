@@ -51,25 +51,6 @@ const findIdInCached = async (cacheKey, model, where, select) => {
 
   return result || null; // Return the result or null if not found
 };
-const findIdInCachedId = async (cacheKey, model, where, select) => {
-  // Retrieve cached data from client
-  let cachedData = await client.get(cacheKey);
-
-  if (!cachedData) {
-    // If cache is empty, fetch data from the database
-    const result = await prisma[model].findFirst({
-      where,
-      select,
-    });
-
-    await client.set(cacheKey, JSON.stringify(result), "EX", 3600);
-    return result;
-  }
-
-  // Parse cached data
-  const data = JSON.parse(cachedData);
-  return data || null; // Return the result or null if not found
-};
 
 export const ExistingUser = ({ phoneNumber }) => {
   return findFirst("user", {
@@ -142,13 +123,39 @@ export const FindOrderById = (id) => {
       billQR: true,
       createAt: true,
       updateAt: true,
+      status: true,
       service: {
         select: {
+          id: true,
+          // posterId: true,
+          // categoryId: true,
+          // statusId: true,
+          // user:{}
+          name: true,
+          village: true,
+          district: true,
+          province: true,
+          priceMonth: true,
+          priceYear: true,
+          priceCommission: true,
+          detail: true,
+          isShare: true,
+          images: true,
           coverImage: true,
-          view: true,
-          category: {
+          createAt: true,
+          updateAt: true,
+          user: {
             select: {
-              title: true,
+              username: true,
+              phoneNumber: true,
+            },
+          },
+          category: {
+            select: { title: true, icon: true },
+          },
+          status: {
+            select: {
+              name: true,
             },
           },
         },
@@ -193,14 +200,14 @@ export const FindReviewById = (id) => {
 };
 
 export const FindServiceById = (id) => {
-  return findIdInCachedId(
-    id + "services",
+  return findIdInCached(
+    "services",
     "service",
     { id, isActive: true },
     {
       id: true,
       posterId: true,
-      categoryId: true,
+      // categoryId: true,
       // statusId: true,
       // user:{}
       name: true,
@@ -213,9 +220,11 @@ export const FindServiceById = (id) => {
       detail: true,
       isShare: true,
       images: true,
+      view:true,
       coverImage: true,
       createAt: true,
       updateAt: true,
+      categoryId: true,
       user: {
         select: {
           username: true,
