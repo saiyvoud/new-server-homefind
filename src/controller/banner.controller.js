@@ -1,6 +1,7 @@
 import client from "../Database/radis.js"; // Ensure correct path and module name
 import { EMessage } from "../service/enum.js";
 import { FindBannerById } from "../service/find.js";
+import { S3UploadImage } from "../service/s3UploadImage.js";
 import {
   CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
@@ -9,7 +10,7 @@ import {
   SendErrorCatch,
   SendSuccess,
 } from "../service/service.js";
-import { UploadImage } from "../service/uploadImage.js";
+
 import { DataExist, ValidateBanner } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 let cacheKey = "banners";
@@ -39,7 +40,7 @@ const BannerController = {
           `${EMessage.pleaseInput}: image is required`
         );
 
-      const img_url = await UploadImage(data.image.data);
+      const img_url = await S3UploadImage(data.image);
       if (!img_url) return SendError(res, 400, `Upload Image failed`);
 
       const banner = await prisma.banner.create({
@@ -47,7 +48,7 @@ const BannerController = {
           link_url,
           image: img_url,
           name,
-          isPublic: (isPublic == "true" ) ? true : false,
+          isPublic: isPublic == "true" ? true : false,
         },
       });
 
@@ -76,11 +77,11 @@ const BannerController = {
         data: {
           link_url,
           name,
-          isPublic: (isPublic == "true") ? true : false,
+          isPublic: isPublic == "true" ? true : false,
         },
       });
       await client.del(cacheKey, cacheKey + "-IsPublice");
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.updateFailed} banner`, error);
@@ -98,10 +99,10 @@ const BannerController = {
 
       const banner = await prisma.banner.update({
         where: { id },
-        data: { isPublic: (isPublic == "true") ? true : false },
+        data: { isPublic: isPublic == "true" ? true : false },
       });
       await client.del(cacheKey, cacheKey + "-IsPublice");
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where);
 
       return SendSuccess(res, `${EMessage.updateSuccess}`, banner);
     } catch (error) {
@@ -132,7 +133,7 @@ const BannerController = {
       if (!bannerExists)
         return SendError(res, 404, `${EMessage.notFound} banner with id ${id}`);
 
-      const img_url = await UploadImage(data.image.data);
+      const img_url = await S3UploadImage(data.image, oldImage);
       if (!img_url) return SendError(res, 400, `Upload Image failed`);
 
       const banner = await prisma.banner.update({
@@ -141,7 +142,7 @@ const BannerController = {
       });
 
       await client.del(cacheKey, cacheKey + "-IsPublice");
-      await   CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.updateSuccess} image banner`, banner);
     } catch (error) {
       return SendErrorCatch(
@@ -166,7 +167,7 @@ const BannerController = {
       });
       // delete cached client  banners and banners_id
       await client.del(cacheKey, cacheKey + "-IsPublice");
-    await   CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendSuccess(res, `${EMessage.deleteSuccess} banner`, banner);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.deleteFailed} banner`, error);
@@ -175,7 +176,11 @@ const BannerController = {
 
   async SelAll(req, res) {
     try {
-      let bannerData = await CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      let bannerData = await CacheAndRetrieveUpdatedData(
+        cacheKey,
+        model,
+        where
+      );
       return SendSuccess(res, `${EMessage.fetchAllSuccess}`, bannerData);
     } catch (error) {
       return SendErrorCatch(res, `${EMessage.errorFetchingAll} banner`, error);

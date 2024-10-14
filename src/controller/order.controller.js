@@ -16,9 +16,10 @@ import {
   SendErrorCatch,
   SendSuccess,
 } from "../service/service.js";
-import { UploadImage } from "../service/uploadImage.js";
+
 import { DataExist, ValidateOrder } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
+import { S3UploadImage } from "../service/s3UploadImage.js";
 let cacheKey = "orders";
 const model = "order";
 let where = { isActive: true };
@@ -146,7 +147,7 @@ const OrderController = {
       }
 
       // Upload the billQR image
-      const img_url = await UploadImage(data.billQR.data).then((url) => {
+      const img_url = await S3UploadImage(data.billQR).then((url) => {
         if (!url) throw new Error("Uploaded image failed");
         return url;
       });
@@ -361,7 +362,7 @@ const OrderController = {
       if (!orderExists) {
         SendError(res, 404, `${EMessage.notFound} order with id ${id}`);
       }
-      const img_url = await UploadImage(data.billQR.data, old_billQR).then(
+      const img_url = await S3UploadImage(data.billQR, old_billQR).then(
         (url) => {
           if (!url) throw new Error("Uploaded image failed");
           return url;

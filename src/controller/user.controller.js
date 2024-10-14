@@ -30,7 +30,7 @@ import client from "../Database/radis.js";
 import { generateJWTtoken } from "../config/GenerateToken.js";
 import { KLimit, SECRET_KEY } from "../config/api.config.js";
 import CryptoJS from "crypto-js";
-import { UploadImage } from "../service/uploadImage.js";
+import { S3UploadImage } from "../service/s3UploadImage.js";
 let cacheKey = "users";
 const model = "user";
 let where = {
@@ -632,7 +632,7 @@ export const UserControlller = {
       if (!userExists) {
         return SendError(res, 404, `${EMessage.notFound} user with id ${id}`);
       }
-      const imgUrl = await UploadImage(data.image.data);
+      const imgUrl = await S3UploadImage(data.image);
       const user = await prisma.user.update({
         where: { id },
         data: {

@@ -1,6 +1,7 @@
 import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindCategoryById } from "../service/find.js";
+import { S3UploadImage } from "../service/s3UploadImage.js";
 import {
   CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
@@ -9,7 +10,7 @@ import {
   SendErrorCatch,
   SendSuccess,
 } from "../service/service.js";
-import { UploadImage } from "../service/uploadImage.js";
+
 import { DataExist, ValidateCategory } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 
@@ -36,7 +37,7 @@ const CategoryController = {
         return SendError(res, 400, `${EMessage.pleaseInput}: icon is required`);
       }
 
-      const img_url = await UploadImage(data.icon.data);
+      const img_url = await S3UploadImage(data.icon);
       const category = await prisma.category.create({
         data: {
           title,
@@ -83,7 +84,7 @@ const CategoryController = {
       const categoryExists = await FindCategoryById(id);
       if (!categoryExists)
         return SendError(res, 404, `${EMessage.notFound} category by id ${id}`);
-      const img_url = await UploadImage(data.icon.data, oldIcon);
+      const img_url = await S3UploadImage(data.icon, oldIcon);
       const category = await prisma.category.update({
         where: {
           id,

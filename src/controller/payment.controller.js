@@ -1,6 +1,7 @@
 import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindPaymentById } from "../service/find.js";
+import { S3UploadImage } from "../service/s3UploadImage.js";
 import {
   CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
@@ -9,7 +10,7 @@ import {
   SendErrorCatch,
   SendSuccess,
 } from "../service/service.js";
-import { UploadImage } from "../service/uploadImage.js";
+
 import { DataExist, ValidatePayment } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 const cacheKey = "payments";
@@ -33,7 +34,7 @@ const PaymentController = {
       if (!data || !data.qr_Image) {
         return SendError(res, 400, `${EMessage.pleaseInput}: qr_Image`);
       }
-      const imgUrl = await UploadImage(data.qr_Image.data);
+      const imgUrl =  await S3UploadImage(data.qr_Image);
       const payment = await prisma.payment.create({
         data: {
           bankName,
@@ -94,7 +95,7 @@ const PaymentController = {
           `${EMessage.notFound} payment with id:${id}`
         );
       }
-      const img_url = await UploadImage(data.qr_Image.data, old_qr_Image);
+      const img_url = await   S3UploadImage(data.qr_Image, old_qr_Image);
       const payment = await prisma.payment.update({
         where: { id },
         data: {

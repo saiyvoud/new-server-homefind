@@ -6,6 +6,7 @@ import {
   FindStatusById,
   FindUserById,
 } from "../service/find.js";
+import { S3UploadImage } from "../service/s3UploadImage.js";
 import {
   CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
@@ -14,7 +15,7 @@ import {
   SendErrorCatch,
   SendSuccess,
 } from "../service/service.js";
-import { UploadImage } from "../service/uploadImage.js";
+
 import { DataExist, ValidateService } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 let cacheKey = "services";
@@ -137,14 +138,14 @@ const ServiceController = {
         ? [data.images]
         : data.images;
       const ImagesPromise = dataDocImageToList.map((img) =>
-        UploadImage(img.data).then((url) => {
+        S3UploadImage(img).then((url)  => {
           if (!url) {
             throw new Error("Upload Image failed");
           }
           return url;
         })
       );
-      const CoverImagePromise = UploadImage(data.coverImage.data).then(
+      const CoverImagePromise =  S3UploadImage(data.coverImage).then(
         (url) => {
           if (!url) {
             throw new Error("Upload Image failed");
@@ -354,8 +355,8 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
-      const coverImage_url = await UploadImage(
-        data.coverImage.data,
+      const coverImage_url = await  S3UploadImage(
+        data.coverImage,
         old_coverImage
       ).then((url) => {
         if (!url) throw new Error("Upload image failed");
@@ -416,7 +417,7 @@ const ServiceController = {
       const OldImageList = serviceExists.images;
       let images_url_List = CheckUniqueElement(OldImageList, oldImages);
       const ImagesPromises = dataImagesToList.map((img, i) =>
-        UploadImage(img.data, oldImages[i]).then((url) => {
+        S3UploadImage(img, oldImages[i]).then((url) => {
           if (!url) {
             throw new Error("Upload Image failed");
           }

@@ -1,6 +1,7 @@
 import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import { FindKYCById, FindUserById } from "../service/find.js";
+import { S3UploadImage } from "../service/s3UploadImage.js";
 import {
   CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
@@ -10,7 +11,7 @@ import {
   SendErrorCatch,
   SendSuccess,
 } from "../service/service.js";
-import { UploadImage } from "../service/uploadImage.js";
+
 import { DataExist, ValidateKYC } from "../service/validate.js";
 import prisma from "../util/prismaClient.js";
 
@@ -76,7 +77,7 @@ const KYCController = {
 
       // Create an array of promises for document image uploads
       const docImagePromises = dataDocImageToList.map((image) =>
-        UploadImage(image.data).then((url) => {
+        S3UploadImage(image).then((url) => {
           if (!url) {
             throw new Error("Upload Image failed");
           }
@@ -85,7 +86,7 @@ const KYCController = {
       );
 
       // Add the profile image upload promise to the array
-      const profilePromise = UploadImage(data.profile.data).then((url) => {
+      const profilePromise = S3UploadImage(data.profile).then((url) => {
         if (!url) {
           throw new Error("Upload Image failed");
         }
@@ -231,7 +232,7 @@ const KYCController = {
         return SendError(res, 400, `${EMessage.pleaseInput}: profile `);
       }
 
-      const profile = await UploadImage(data.profile.data, oldProfile).then(
+      const profile = await  S3UploadImage(data.profile,oldProfile).then(
         (url) => {
           if (!url) {
             throw new Error("Upload Image failed");
@@ -292,7 +293,7 @@ const KYCController = {
 
       // Prepare promises for uploading new images
       const DocImagePromise = dataDocImageToList.map((image, index) =>
-        UploadImage(image.data, oldDocImage[index]).then((url) => {
+        S3UploadImage(image, oldDocImage[index]).then((url) => {
           if (!url) {
             throw new Error("Upload Image failed");
           }
