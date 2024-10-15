@@ -17,7 +17,9 @@ export const auth = async (req, res, next) => {
     if (!token) return SendError(res, 401, EMessage.notFound + " Token");
     const decode = await VerifyToken(token);
 
-    req.user = decode;
+    req.user = decode.id;
+    req.role = decode.role;
+   
     next();
   } catch (err) {
     if (err.message == "Token has expired") {

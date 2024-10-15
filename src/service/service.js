@@ -69,7 +69,13 @@ export const CheckUniqueElement = (a, b) => {
 //   }
 // };
 
-export const CacheAndInsertData = async (cacheKey, model,where, newData, select) => {
+export const CacheAndInsertData = async (
+  cacheKey,
+  model,
+  where,
+  newData,
+  select
+) => {
   try {
     const cachedData = await client.get(cacheKey);
     let data;
@@ -93,25 +99,34 @@ export const CacheAndInsertData = async (cacheKey, model,where, newData, select)
   }
 };
 
-export const CacheAndRetrieveUpdatedData = async (cacheKey, model,where, select) => {
+export const CacheAndRetrieveUpdatedData = async (
+  cacheKey,
+  model,
+  where,
+  select
+) => {
   try {
     //const cachedData = await client.get(cacheKey);
     let data;
     // if (!cachedData) {
     console.log("pomostion");
-    console.log(`Cache Key: ${cacheKey}, Model: ${model}, Where: ${JSON.stringify(where)}, Select: ${JSON.stringify(select)}`);
+    console.log(
+      `Cache Key: ${cacheKey}, Model: ${model}, Where: ${JSON.stringify(
+        where
+      )}, Select: ${JSON.stringify(select)}`
+    );
     if (true) {
       data = await prisma[model].findMany({
         where,
         select,
         orderBy: { createAt: "desc" },
       });
-      
+
       await client.set(cacheKey, JSON.stringify(data), "EX", 3600);
     } else {
       data = JSON.parse(cachedData);
     }
-  //  console.log('data :>> ', data);
+    //  console.log('data :>> ', data);
 
     return data;
   } catch (error) {
@@ -215,7 +230,7 @@ export const VerifyToken = (token) => {
           return reject(new Error("Invalid authorization: User not found"));
         }
 
-        return resolve(user.id);
+        return resolve({ id: user.id, role: user.role });
       } catch (error) {
         console.error("Decryption or Database Error:", error.message);
         return reject(

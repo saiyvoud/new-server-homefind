@@ -138,21 +138,19 @@ const ServiceController = {
         ? [data.images]
         : data.images;
       const ImagesPromise = dataDocImageToList.map((img) =>
-        S3UploadImage(img).then((url)  => {
+        S3UploadImage(img).then((url) => {
           if (!url) {
             throw new Error("Upload Image failed");
           }
           return url;
         })
       );
-      const CoverImagePromise =  S3UploadImage(data.coverImage).then(
-        (url) => {
-          if (!url) {
-            throw new Error("Upload Image failed");
-          }
-          return url;
+      const CoverImagePromise = S3UploadImage(data.coverImage).then((url) => {
+        if (!url) {
+          throw new Error("Upload Image failed");
         }
-      );
+        return url;
+      });
 
       const [coverImage_url, images_url_list] = await Promise.all([
         CoverImagePromise,
@@ -212,12 +210,19 @@ const ServiceController = {
 
       // Check if the service exists
       const serviceExists = await FindServiceById(id);
-      await client.del(cacheKey + "-ct-" + serviceExists.categoryId);
       if (!serviceExists) {
         return SendError(
           res,
           404,
           `${EMessage.notFound} service with id: ${id}`
+        );
+      }
+      await client.del(cacheKey + "-ct-" + serviceExists.categoryId);
+      if (serviceExists.posterId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the service with the specified ID:${id}`
         );
       }
 
@@ -309,7 +314,7 @@ const ServiceController = {
     try {
       const id = req.params.id;
       const serviceExists = await FindServiceById(id);
-      
+
       if (!serviceExists) {
         return SendError(
           res,
@@ -317,7 +322,7 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
-   
+
       const service = await prisma.service.update({
         where: { id },
         data: {
@@ -355,7 +360,15 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
-      const coverImage_url = await  S3UploadImage(
+      if (serviceExists.posterId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the service with the specified ID:${id}`
+        );
+      }
+
+      const coverImage_url = await S3UploadImage(
         data.coverImage,
         old_coverImage
       ).then((url) => {
@@ -414,6 +427,14 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
+      if (serviceExists.posterId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the service with the specified ID:${id}`
+        );
+      }
+
       const OldImageList = serviceExists.images;
       let images_url_List = CheckUniqueElement(OldImageList, oldImages);
       const ImagesPromises = dataImagesToList.map((img, i) =>
@@ -463,6 +484,14 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
+      if (serviceExists.posterId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the service with the specified ID:${id}`
+        );
+      }
+
       const service = await prisma.service.update({
         where: { id },
         data: {
@@ -529,6 +558,14 @@ const ServiceController = {
           `${EMessage.notFound} service with id:${id}`
         );
       }
+      if (serviceExists.posterId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the service with the specified ID:${id}`
+        );
+      }
+
       const service = await prisma.service.update({
         where: { id },
         data: {

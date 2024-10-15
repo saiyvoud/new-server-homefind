@@ -212,6 +212,13 @@ const OrderController = {
       if (!orderExists) {
         return SendError(res, 404, `${EMessage.notFound} order with id ${id}`);
       }
+      if (orderExists.userId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the order with the specified ID:${id}`
+        );
+      }
 
       // Prepare promises to check if related entities exist
       const promiseList = [];
@@ -326,6 +333,13 @@ const OrderController = {
       if (!orderExists) {
         SendError(res, 404, `${EMessage.notFound} order with id ${id}`);
       }
+      if (orderExists.userId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the order with the specified ID:${id}`
+        );
+      }
 
       const order = await prisma.order.update({
         where: { id },
@@ -362,6 +376,13 @@ const OrderController = {
       if (!orderExists) {
         SendError(res, 404, `${EMessage.notFound} order with id ${id}`);
       }
+      if (orderExists.userId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the order with the specified ID:${id}`
+        );
+      }
       const img_url = await S3UploadImage(data.billQR, old_billQR).then(
         (url) => {
           if (!url) throw new Error("Uploaded image failed");
@@ -390,6 +411,13 @@ const OrderController = {
       const orderExists = await FindOrderById(id);
       if (!orderExists) {
         SendError(res, 404, `${EMessage.notFound} order with id ${id}`);
+      }
+      if (orderExists.userId !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership of the order with the specified ID:${id}`
+        );
       }
       const order = await prisma.order.update({
         where: { id },
@@ -459,12 +487,12 @@ const OrderController = {
       const order = await CacheAndRetrieveUpdatedData(
         cacheKey + posterId,
         model,
-        { 
+        {
           isActive: true,
           service: {
-            posterId: posterId
-          }
-         },
+            posterId: posterId,
+          },
+        },
         select
       );
       SendSuccess(res, `${EMessage.fetchAllSuccess} order by posterId `, order);

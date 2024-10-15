@@ -294,9 +294,9 @@ export const UserControlller = {
           400,
           `${EMessage.pleaseInput}: ${validate.join(", ")}`
         );
-      const {  phoneNumber, password } = req.body;
+      const { phoneNumber, password } = req.body;
       const user = await prisma.user.findFirst({
-        where: {  phoneNumber, isActive: true },
+        where: { phoneNumber, isActive: true },
       });
       if (!user)
         return SendError(
@@ -443,6 +443,14 @@ export const UserControlller = {
       if (!userExists)
         return SendError(res, 404, `${EMessage.notFound} user with ID ${id}`);
 
+      if (userExists.id !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership profile with the specified ID:${id}`
+        );
+      }
+
       const existingUser = await ExistingUser(req.body);
 
       if (existingUser) {
@@ -505,6 +513,13 @@ export const UserControlller = {
       if (!userExists) {
         return SendError(res, 404, `${EMessage.deleteFailed}`);
       }
+      if (userExists.id !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership profile with the specified ID:${id}`
+        );
+      }
       const user = await prisma.user.update({
         where: {
           id,
@@ -524,14 +539,20 @@ export const UserControlller = {
     try {
       const id = req.params.id;
       let { ban } = req.body;
-      if (!ban)
-        return SendError(res, 400, `${EMessage.pleaseInput} : ban`);
+      if (!ban) return SendError(res, 400, `${EMessage.pleaseInput} : ban`);
       if (typeof ban !== "boolean") {
         ban = ban == "true" ? true : false;
       }
       const userExists = await FindUserById(id);
       if (!userExists) {
         return SendError(res, 404, `${EMessage.deleteFailed}`);
+      }
+      if (userExists.id !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership profile with the specified ID:${id}`
+        );
       }
       const user = await prisma.user.update({
         where: {
@@ -554,6 +575,13 @@ export const UserControlller = {
       const userExists = await FindUserById(id);
       if (!userExists) {
         return SendError(res, 404, `${EMessage.notFound} with id ${id}`);
+      }
+      if (userExists.id !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership profile with the specified ID:${id}`
+        );
       }
       const user = await prisma.user.update({
         where: {
@@ -631,6 +659,13 @@ export const UserControlller = {
       const userExists = await FindUserById(id);
       if (!userExists) {
         return SendError(res, 404, `${EMessage.notFound} user with id ${id}`);
+      }
+      if (userExists.id !== req.user && req.role === "user") {
+        return SendError(
+          res,
+          404,
+          `You do not have ownership profile with the specified ID:${id}`
+        );
       }
       const imgUrl = await S3UploadImage(data.image);
       const user = await prisma.user.update({
