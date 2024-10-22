@@ -49,7 +49,7 @@ let select = {
     },
   },
   category: {
-    select: { title: true, icon: true },
+    select: { title: true, icon: true, showHome: true },
   },
   status: {
     select: {
@@ -189,7 +189,6 @@ const ServiceController = {
           images: images_url_list,
           coverImage: coverImage_url,
         },
-        select,
       });
       await client.del(
         cacheKey + "-u-" + posterId,
@@ -593,6 +592,24 @@ const ServiceController = {
         select
       );
       SendSuccess(res, `${EMessage.fetchAllSuccess} service`, service);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.errorFetchingAll} service`, error);
+    }
+  },
+
+  async SelectCategoryShowHome(req, res) {
+    try {
+      const isShow = req.query.isShow === "true";
+      const service = await CacheAndRetrieveUpdatedData(
+        cacheKey,
+        model,
+        where,
+        select
+      );
+      console.log("isShow :>> ", isShow);
+      const result = service.filter((i) => Boolean(i.category.showHome)===isShow);
+
+      SendSuccess(res, `${EMessage.fetchAllSuccess} service`, result);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} service`, error);
     }

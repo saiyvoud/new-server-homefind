@@ -11,6 +11,7 @@ import { Server } from "socket.io";
 import APIRouter from "./router/index.router.js";
 import client from "./Database/radis.js";
 import { setupSocket } from "./util/socketHandler.js";
+import { Decrypt } from "./service/service.js";
 
 // Redis event listeners
 
@@ -76,6 +77,8 @@ const checkDatabaseConnection = async () => {
 await client.flushAll();
 console.log("All Redis cache cleared");
 
+const d=await Decrypt("U2FsdGVkX19sAU+rEEwABq7WMmwaV9YyCaBVE4a8qjs=")
+console.log('d :>> ', d);
 // const user = await client.get("categorys");
 // console.log('categorys :>> ', user);
 // Start Server

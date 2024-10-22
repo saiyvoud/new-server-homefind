@@ -22,7 +22,7 @@ const CategoryController = {
   async Insert(req, res) {
     try {
       const validate = ValidateCategory(req.body);
-      const { title } = req.body;
+      let { title, showHome } = req.body;
       const data = req.files;
 
       if (validate.length > 0) {
@@ -32,6 +32,7 @@ const CategoryController = {
           `${EMessage.pleaseInput}: ${validate.join(", ")}`
         );
       }
+      showHome = typeof showHome === "boolean" ? showHome : showHome === "true";
 
       if (!data || !data.icon) {
         return SendError(res, 400, `${EMessage.pleaseInput}: icon is required`);
@@ -41,6 +42,7 @@ const CategoryController = {
       const category = await prisma.category.create({
         data: {
           title,
+          showHome,
           icon: img_url,
         },
       });
@@ -55,6 +57,11 @@ const CategoryController = {
       const id = req.params.id;
       const data = DataExist(req.body);
       const categoryExists = await FindCategoryById(id);
+      if (data.showHome)
+        data.showHome =
+          typeof data.showHome === "boolean"
+            ? data.showHome
+            : data.showHome === "true";
       if (!categoryExists)
         return SendError(res, 404, `${EMessage.notFound} category by id ${id}`);
       const category = await prisma.category.update({
@@ -64,7 +71,7 @@ const CategoryController = {
         data,
       });
       await client.del(cacheKey);
-      await   CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -94,7 +101,7 @@ const CategoryController = {
         },
       });
       await client.del(cacheKey);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.updateSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.updateFailed}`, error);
@@ -115,7 +122,7 @@ const CategoryController = {
         },
       });
       await client.del(cacheKey);
-      await  CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      await CacheAndRetrieveUpdatedData(cacheKey, model, where);
       return SendCreate(res, `${EMessage.deleteSuccess}`, category);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.deleteFailed}`, error);
@@ -129,6 +136,18 @@ const CategoryController = {
         where
       );
       return SendCreate(res, `${EMessage.fetchAllSuccess}`, category);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.errorFetchingAll}`, error);
+    }
+  },
+  async SelectShowHome(req, res) {
+    try {
+      const isShow = req.query.isShow === 'true'; // Ensuring boolean type
+      const category = await CacheAndRetrieveUpdatedData(cacheKey, model, where);
+      console.log("isShow :>> ", isShow);
+      const filteredCategories = category.filter((i) => Boolean(i.showHome) === isShow);
+      return SendCreate(res, `${EMessage.fetchAllSuccess}`, filteredCategories);
+      
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll}`, error);
     }

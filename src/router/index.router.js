@@ -41,6 +41,7 @@ route.delete(`${bannner}/delete/:id`, auth, admin, BannerController.Delete);
 const category = "/category";
 
 route.get(`${category}/selAll`, auth, CategoryController.SelectAll);
+route.get(`${category}/selShowHome`, auth, CategoryController.SelectShowHome);
 route.get(`${category}/selOne/:id`, auth, CategoryController.SelectOne);
 
 route.post(`${category}/insert`, auth, admin, CategoryController.Insert);
@@ -197,6 +198,11 @@ route.get(
   `${service}/selByCategoryId/:categoryId`,
   auth,
   ServiceController.SelectByCategoryId
+);
+route.get(
+  `${service}/selCategoryShowHome`,
+  auth,
+  ServiceController.SelectCategoryShowHome
 );
 route.get(`${service}/search`, auth, ServiceController.Search);
 route.get(`${service}/searchAddress`, auth, ServiceController.SearchAddress);

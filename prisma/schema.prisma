@@ -34,9 +34,9 @@ enum StatusType {
 model User {
   id           String    @id @default(uuid()) @db.VarChar(36)
   isActive     Boolean   @default(true)
-  username     String    
-  phoneNumber  String    
-  email        String?    
+  username     String
+  phoneNumber  String
+  email        String?
   password     String
   profile      String    @default("")
   ban          Boolean   @default(false)
@@ -190,6 +190,7 @@ model Category {
   isActive Boolean   @default(true)
   title    String
   icon     String
+  showHome Boolean   @default(false)
   createAt DateTime  @default(now())
   updateAt DateTime  @updatedAt
   Service  Service[]

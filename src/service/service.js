@@ -106,16 +106,16 @@ export const CacheAndRetrieveUpdatedData = async (
   select
 ) => {
   try {
-    //const cachedData = await client.get(cacheKey);
+    const cachedData = await client.get(cacheKey);
     let data;
-    // if (!cachedData) {
-    console.log("pomostion");
-    console.log(
-      `Cache Key: ${cacheKey}, Model: ${model}, Where: ${JSON.stringify(
-        where
-      )}, Select: ${JSON.stringify(select)}`
-    );
-    if (true) {
+    if (!cachedData) {
+    // console.log("pomostion");
+    // console.log(
+    //   `Cache Key: ${cacheKey}, Model: ${model}, Where: ${JSON.stringify(
+    //     where
+    //   )}, Select: ${JSON.stringify(select)}`
+    // );
+    // if (true) {
       data = await prisma[model].findMany({
         where,
         select,
@@ -123,10 +123,13 @@ export const CacheAndRetrieveUpdatedData = async (
       });
 
       await client.set(cacheKey, JSON.stringify(data), "EX", 3600);
+
     } else {
+
       data = JSON.parse(cachedData);
+
+      // console.log('data :>> ', data);
     }
-    //  console.log('data :>> ', data);
 
     return data;
   } catch (error) {
