@@ -40,8 +40,8 @@ route.delete(`${bannner}/delete/:id`, auth, admin, BannerController.Delete);
 //-----------------------category------------------------------
 const category = "/category";
 
-route.get(`${category}/selAll`, auth, CategoryController.SelectAll);
-route.get(`${category}/selShowHome`, auth, CategoryController.SelectShowHome);
+route.get(`${category}/selAll`, CategoryController.SelectAll);
+route.get(`${category}/selShowHome`, CategoryController.SelectShowHome);
 route.get(`${category}/selOne/:id`, auth, CategoryController.SelectOne);
 
 route.post(`${category}/insert`, auth, admin, CategoryController.Insert);
