@@ -15,9 +15,9 @@ const route = express.Router();
 //-----------------------banner------------------------------
 
 const bannner = "/banner";
-route.get(`${bannner}/selAll`, auth, BannerController.SelAll);
-route.get(`${bannner}/selOne/:id`, auth, BannerController.SelOne);
-route.get(`${bannner}/selByIsPublice`, auth, BannerController.SelByIsPublice);
+route.get(`${bannner}/selAll`, BannerController.SelAll);
+route.get(`${bannner}/selOne/:id`, BannerController.SelOne);
+route.get(`${bannner}/selByIsPublice`, BannerController.SelByIsPublice);
 
 route.post(`${bannner}/insert`, auth, admin, BannerController.Insert);
 
@@ -99,8 +99,8 @@ route.delete(`${order}/delete/:id`, auth, OrderController.Delete);
 
 //-----------------------payment------------------------------
 const payment = `/payment`;
-route.get(`${payment}/selAll`, auth, PaymentController.SelectAll);
-route.get(`${payment}/selOne/:id`, auth, PaymentController.SelectOne);
+route.get(`${payment}/selAll`, PaymentController.SelectAll);
+route.get(`${payment}/selOne/:id`, PaymentController.SelectOne);
 route.get(
   `${payment}/selByIsPublic`,
   auth,
@@ -122,16 +122,14 @@ route.delete(`${payment}/delete/:id`, auth, admin, PaymentController.Delete);
 
 //-----------------------promotion------------------------------
 const promotion = `/promotion`;
-route.get(`${promotion}/selAll`, auth, PromotionController.SelAll);
-route.get(`${promotion}/selOne/:id`, auth, PromotionController.SelOne);
+route.get(`${promotion}/selAll`, PromotionController.SelAll);
+route.get(`${promotion}/selOne/:id`, PromotionController.SelOne);
 route.get(
   `${promotion}/selByCode/:code`,
-  auth,
   PromotionController.SelectByCode
 );
 route.get(
   `${promotion}/selByIsGiven/:isGiven`,
-  auth,
   PromotionController.SelectByIsGiven
 );
 
