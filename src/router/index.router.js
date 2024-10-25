@@ -260,6 +260,7 @@ route.get(
 );
 
 route.get(`${saleService}/search`, auth, SaleServiceController.Search);
+route.get(`${saleService}/selRecommend`, auth, SaleServiceController.SelectRecommend);
 route.get(
   `${saleService}/searchAddress`,
   auth,

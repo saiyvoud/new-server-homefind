@@ -18,7 +18,7 @@ import {
   FindUserById,
 } from "../service/find.js";
 import { DeleteCachedKey } from "../service/cach.deletekey.js";
-
+// import { LIMITED_POST_SALES_SERVICES } from "../config/api.config.js";
 let cacheKey = "saleService";
 let where = { isActive: true };
 const model = "saleService";
@@ -95,8 +95,12 @@ const SaleServiceController = {
         { posterId: posterId, isActive: true },
         select
       );
-      if (userCount.length > 10 && role==="user") {
-        return SendError(res, 400, `please upgrate account for post`);
+      if (userCount.length > 10 && role === "user") {
+        return SendError(
+          res,
+          400,
+          `Please upgrade your account to post sale service more `
+        );
       }
 
       const coverImage = req?.files?.coverImage;
@@ -376,7 +380,7 @@ const SaleServiceController = {
       return SendErrorCatch(
         res,
         `${EMessage.updateFailed} coverImage saleService`,
-        error
+        err
       );
     }
   },
@@ -559,6 +563,33 @@ const SaleServiceController = {
         where,
         select
       );
+      SendSuccess(res, `${EMessage.fetchAllSuccess} saleService`, saleService);
+    } catch (error) {
+      SendErrorCatch(res, `${EMessage.errorFetchingAll} saleService`, error);
+    }
+  },
+  async SelectRecommend(req, res) {
+    try {
+      const whereRecommend = {
+        ...where,
+        user: {
+          OR: [
+            {
+              role: "admin",
+            },
+            {
+              role: "superadmin",
+            },
+          ],
+        },
+      };
+      const saleService = await CacheAndRetrieveUpdatedData(
+        cacheKey + "Rc",
+        model,
+        whereRecommend,
+        select
+      );
+
       SendSuccess(res, `${EMessage.fetchAllSuccess} saleService`, saleService);
     } catch (error) {
       SendErrorCatch(res, `${EMessage.errorFetchingAll} saleService`, error);
