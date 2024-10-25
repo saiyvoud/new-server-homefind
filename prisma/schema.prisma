@@ -50,6 +50,8 @@ model User {
   Review       Review[]
   Service      Service[]
   Order        Order[]
+
+  SaleService SaleService[]
 }
 
 model Kyc {
@@ -162,7 +164,7 @@ model Service {
   priceMonth      Float
   priceYear       Float
   priceCommission Float
-  detail          String
+  detail          String   @db.Text
   isShare         Boolean
   view            Int      @default(1)
   statusId        String   @db.VarChar(36)
@@ -176,6 +178,35 @@ model Service {
   Order           Order[]
 }
 
+model SaleService {
+  id         String       @id @default(uuid()) @db.VarChar(36)
+  isActive   Boolean      @default(true)
+  posterId   String       @db.VarChar(36)
+  categoryId String       @db.VarChar(36)
+  name       String
+  village    String
+  district   String
+  province   String
+  price      Float
+  currency   currencyType
+  detail     String       @db.Text
+  coverImage String
+  images     String[]
+  view       Int          @default(1)
+  statusId   String       @db.VarChar(36)
+  user       User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  category   Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  status     Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  createAt   DateTime     @default(now())
+  updateAt   DateTime     @updatedAt
+}
+
+enum currencyType {
+  KIP
+  USD
+  THB
+}
+
 model Status {
   id       String    @id @default(uuid()) @db.VarChar(36)
   isActive Boolean   @default(true)
@@ -183,6 +214,8 @@ model Status {
   createAt DateTime  @default(now())
   updateAt DateTime  @updatedAt
   Service  Service[]
+
+  SaleService SaleService[]
 }
 
 model Category {
@@ -194,6 +227,8 @@ model Category {
   createAt DateTime  @default(now())
   updateAt DateTime  @updatedAt
   Service  Service[]
+
+  SaleService SaleService[]
 }
 
 model Wallet {

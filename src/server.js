@@ -11,7 +11,8 @@ import { Server } from "socket.io";
 import APIRouter from "./router/index.router.js";
 import client from "./Database/radis.js";
 import { setupSocket } from "./util/socketHandler.js";
-import { Decrypt } from "./service/service.js";
+import { Decrypt, SendError } from "./service/service.js";
+import { currencyType } from "@prisma/client";
 
 // Redis event listeners
 
@@ -76,7 +77,6 @@ const checkDatabaseConnection = async () => {
 // Delete all keys from Redis
 await client.flushAll();
 console.log("All Redis cache cleared");
-
 
 // const user = await client.get("categorys");
 // console.log('categorys :>> ', user);

@@ -11,6 +11,7 @@ import PaymentController from "../controller/payment.controller.js";
 import ReviewController from "../controller/review.controller.js";
 import ServiceController from "../controller/service.controller.js";
 import WalletController from "../controller/wallet.controller.js";
+import SaleServiceController from "../controller/service_sale.controller.js";
 const route = express.Router();
 //-----------------------banner------------------------------
 
@@ -124,10 +125,7 @@ route.delete(`${payment}/delete/:id`, auth, admin, PaymentController.Delete);
 const promotion = `/promotion`;
 route.get(`${promotion}/selAll`, PromotionController.SelAll);
 route.get(`${promotion}/selOne/:id`, PromotionController.SelOne);
-route.get(
-  `${promotion}/selByCode/:code`,
-  PromotionController.SelectByCode
-);
+route.get(`${promotion}/selByCode/:code`, PromotionController.SelectByCode);
 route.get(
   `${promotion}/selByIsGiven/:isGiven`,
   PromotionController.SelectByIsGiven
@@ -220,6 +218,53 @@ route.get(
 //search by name order by created--
 //search by v d p --
 // search between  price --
+
+//-----------------------service------------------------------
+const saleService = `/saleService`;
+
+route.get(`${saleService}/selAll`, SaleServiceController.SelectAll);
+route.get(`${saleService}/selOne/:id`, SaleServiceController.SelectOne);
+route.get(
+  `${saleService}/selByUserId/:userId`,
+  auth,
+  SaleServiceController.SelectByUserId
+);
+
+route.post(`${saleService}/insert`, auth, SaleServiceController.Insert);
+
+route.put(`${saleService}/update/:id`, auth, SaleServiceController.Update);
+
+route.put(
+  `${saleService}/updateStatusId/:id`,
+  auth,
+  SaleServiceController.UpdateStatusId
+);
+route.put(
+  `${saleService}/updateCoverImage/:id`,
+  auth,
+  SaleServiceController.UpdateCoverImage
+);
+route.put(
+  `${saleService}/updateImages/:id`,
+  auth,
+  SaleServiceController.UpdateImages
+);
+route.put(`${saleService}/updateView/:id`, SaleServiceController.UpdateView);
+
+route.delete(`${saleService}/delete/:id`, auth, SaleServiceController.Delete);
+
+route.get(
+  `${saleService}/selByCategoryId/:categoryId`,
+  auth,
+  SaleServiceController.SelectByCategoryId
+);
+
+route.get(`${saleService}/search`, auth, SaleServiceController.Search);
+route.get(
+  `${saleService}/searchAddress`,
+  auth,
+  SaleServiceController.SearchAddress
+);
 
 //-----------------------status------------------------------
 const status = "/status";

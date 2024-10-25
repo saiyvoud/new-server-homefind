@@ -109,28 +109,19 @@ const ServiceController = {
         isShare = isShare === "true";
       }
 
-      console.log("Attempting to find category with ID:", categoryId);
-      const categoryExists = await prisma.category.findUnique({
-        where: { id: categoryId },
-      });
-
-      console.log("Category lookup result:", categoryExists);
-
-      if (!categoryExists) {
-        console.log("All categories:", await prisma.category.findMany());
-        return SendError(res, 404, `Category with id ${categoryId} not found`);
-      }
-
-      const [userExists, statsExists] = await Promise.all([
+      const [userExists, statsExists, categoryExists] = await Promise.all([
         FindUserById(posterId),
         FindStatusById(statusId),
+        FindCategoryById(categoryId),
       ]);
-      if (!userExists || !statsExists) {
+      if (!userExists || !statsExists || !categoryExists) {
         return SendError(
           res,
           404,
-          `${EMessage.notFound} ${!userExists ? "user" : "status"} with id:${
-            !userExists ? posterId : statusId
+          `${EMessage.notFound} ${
+            !userExists ? "user" : !statsExists ? "status" : "category"
+          } with id:${
+            !userExists ? posterId : !statsExists ? statusId : categoryId
           }`
         );
       }
@@ -156,22 +147,7 @@ const ServiceController = {
         CoverImagePromise,
         Promise.all(ImagesPromise),
       ]);
-      console.log("data=>", {
-        posterId,
-        categoryId,
-        name,
-        village,
-        district,
-        province,
-        priceMonth,
-        priceYear,
-        priceCommission,
-        detail,
-        isShare,
-        statusId,
-        images: images_url_list,
-        coverImage: coverImage_url,
-      });
+
       const service = await prisma.service.create({
         data: {
           posterId,
@@ -216,7 +192,7 @@ const ServiceController = {
           `${EMessage.notFound} service with id: ${id}`
         );
       }
-      await client.del(cacheKey + "-ct-" + serviceExists.categoryId);
+      // await client.del(cacheKey + "-ct-" + serviceExists.categoryId);
       if (serviceExists.posterId !== req.user && req.role === "user") {
         return SendError(
           res,
@@ -607,7 +583,9 @@ const ServiceController = {
         select
       );
       console.log("isShow :>> ", isShow);
-      const result = service.filter((i) => Boolean(i.category.showHome)===isShow);
+      const result = service.filter(
+        (i) => Boolean(i.category.showHome) === isShow
+      );
 
       SendSuccess(res, `${EMessage.fetchAllSuccess} service`, result);
     } catch (error) {

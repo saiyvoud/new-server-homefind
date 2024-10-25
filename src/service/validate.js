@@ -1,4 +1,4 @@
-const validateData = (data) => {
+export const validateData = (data) => {
   return Object.keys(data).filter((key) => !data[key]);
 };
 export const DataExist = (data) => {

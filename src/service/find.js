@@ -220,7 +220,7 @@ export const FindServiceById = (id) => {
       detail: true,
       isShare: true,
       images: true,
-      view:true,
+      view: true,
       coverImage: true,
       createAt: true,
       updateAt: true,
@@ -233,6 +233,44 @@ export const FindServiceById = (id) => {
       },
       category: {
         select: { title: true, icon: true },
+      },
+      status: {
+        select: {
+          name: true,
+        },
+      },
+    }
+  );
+};
+
+export const FindSaleServiceById = (id) => {
+  return findIdInCached(
+    "saleService",
+    "saleService",
+    { id, isActive: true },
+    {
+      id: true,
+      posterId: true,
+      name: true,
+      village: true,
+      district: true,
+      province: true,
+      price: true,
+      detail: true,
+      images: true,
+      view: true,
+      coverImage: true,
+      createAt: true,
+      updateAt: true,
+      categoryId: true,
+      user: {
+        select: {
+          username: true,
+          phoneNumber: true,
+        },
+      },
+      category: {
+        select: { title: true, icon: true, showHome: true },
       },
       status: {
         select: {
