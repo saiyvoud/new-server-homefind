@@ -38,6 +38,7 @@ let select = {
   isShare: true,
   images: true,
   view: true,
+  isShow:true,
   coverImage: true,
   createAt: true,
   updateAt: true,
@@ -261,6 +262,9 @@ const ServiceController = {
       // Convert isShare to boolean if necessary
       if (data.isShare && typeof data.isShare !== "boolean") {
         data.isShare = data.isShare === "true" || data.isShare === "1";
+      }
+      if (data.isShow && typeof data.isShow !== "boolean") {
+        data.isShow = data.isShow === "true" || data.isShow === "1";
       }
 
       // Update the service

@@ -221,6 +221,7 @@ export const FindServiceById = (id) => {
       isShare: true,
       images: true,
       view: true,
+      isShow:true,
       coverImage: true,
       createAt: true,
       updateAt: true,

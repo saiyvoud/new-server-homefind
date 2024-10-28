@@ -167,6 +167,7 @@ model Service {
   detail          String   @db.Text
   isShare         Boolean
   view            Int      @default(1)
+  isShow          Boolean  @default(true)
   statusId        String   @db.VarChar(36)
   coverImage      String
   images          String[]
