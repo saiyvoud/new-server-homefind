@@ -131,6 +131,7 @@ export const FindOrderById = (id) => {
           // categoryId: true,
           // statusId: true,
           // user:{}
+          isAllowBooking: true,
           name: true,
           village: true,
           district: true,
@@ -210,6 +211,7 @@ export const FindServiceById = (id) => {
       // categoryId: true,
       // statusId: true,
       // user:{}
+      isAllowBooking: true,
       name: true,
       village: true,
       district: true,
@@ -227,6 +229,7 @@ export const FindServiceById = (id) => {
       categoryId: true,
       user: {
         select: {
+          id: true,
           username: true,
           phoneNumber: true,
         },

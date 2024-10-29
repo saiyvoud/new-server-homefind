@@ -3,55 +3,30 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // or "postgresql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum UserType {
-  user
-  admin
-  superadmin
-}
-
-enum StatusType {
-  // avilable
-  // reserved
-  // approvedByAdmin
-  // approvedByPoster
-  // inProgress
-  // completed
-  // cancelled
-  reserved
-  approvedByAdmin
-  approvedByPoster
-  inProgress
-  bookerConfirm
-  posterConfirm
-  bookerReviewed
-  cancelled
-}
-
 model User {
-  id           String    @id @default(uuid()) @db.VarChar(36)
-  isActive     Boolean   @default(true)
+  id           String        @id @default(uuid()) @db.VarChar(36)
+  isActive     Boolean       @default(true)
   username     String
   phoneNumber  String
   email        String?
   password     String
-  profile      String    @default("")
-  ban          Boolean   @default(false)
-  kyc          Boolean   @default(false)
-  role         UserType  @default(user)
-  loginversion Int       @default(1)
-  createAt     DateTime  @default(now())
-  updateAt     DateTime  @updatedAt
+  profile      String        @default("")
+  ban          Boolean       @default(false)
+  kyc          Boolean       @default(false)
+  role         UserType      @default(user)
+  loginversion Int           @default(1)
+  createAt     DateTime      @default(now())
+  updateAt     DateTime      @updatedAt
   Kyc          Kyc[]
-  Wallet       Wallet[]
-  Review       Review[]
-  Service      Service[]
   Order        Order[]
-
-  SaleService SaleService[]
+  Review       Review[]
+  SaleService  SaleService[]
+  Service      Service[]
+  Wallet       Wallet[]
 }
 
 model Kyc {
@@ -68,9 +43,9 @@ model Kyc {
   docNo     String
   docImage  String[]
   profile   String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Order {
@@ -90,12 +65,12 @@ model Order {
   paymentId    String     @db.VarChar(36)
   billQR       String
   status       StatusType @default(reserved)
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  promotion    Promotion? @relation(fields: [promotionId], references: [id], onDelete: SetNull)
-  service      Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  payment      Payment    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   createAt     DateTime   @default(now())
   updateAt     DateTime   @updatedAt
+  payment      Payment    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  promotion    Promotion? @relation(fields: [promotionId], references: [id])
+  service      Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   Review       Review[]
 }
 
@@ -122,8 +97,8 @@ model Promotion {
   isUsed    Boolean  @default(false)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
-  Wallet    Wallet[]
   Order     Order[]
+  Wallet    Wallet[]
 }
 
 model Payment {
@@ -146,17 +121,17 @@ model Review {
   orderId  String   @db.VarChar(36)
   reason   String
   star     Float
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Service {
-  id              String   @id @default(uuid()) @db.VarChar(36)
-  isActive        Boolean  @default(true)
-  posterId        String   @db.VarChar(36)
-  categoryId      String   @db.VarChar(36)
+  id              String       @id @default(uuid()) @db.VarChar(36)
+  isActive        Boolean      @default(true)
+  posterId        String       @db.VarChar(36)
+  categoryId      String       @db.VarChar(36)
   name            String
   village         String
   district        String
@@ -164,18 +139,20 @@ model Service {
   priceMonth      Float
   priceYear       Float
   priceCommission Float
-  detail          String   @db.Text
-  isShare         Boolean
-  view            Int      @default(1)
-  statusId        String   @db.VarChar(36)
+  detail          String
+  view            Int          @default(1)
+  statusId        String       @db.VarChar(36)
   coverImage      String
   images          String[]
-  user            User     @relation(fields: [posterId], references: [id], onDelete: Cascade)
-  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  status          Status   @relation(fields: [statusId], references: [id], onDelete: Cascade)
-  createAt        DateTime @default(now())
-  updateAt        DateTime @updatedAt
+  createAt        DateTime     @default(now())
+  updateAt        DateTime     @updatedAt
+  isAllowBooking  Boolean      @default(false)
+  currency        currencyType
+  isShare         Boolean      @default(false)
   Order           Order[]
+  category        Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  status          Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
 }
 
 model SaleService {
@@ -189,46 +166,38 @@ model SaleService {
   province   String
   price      Float
   currency   currencyType
-  detail     String       @db.Text
+  detail     String
   coverImage String
   images     String[]
-  view       Int          @default(1)
   statusId   String       @db.VarChar(36)
-  user       User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
-  category   Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  status     Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
   createAt   DateTime     @default(now())
   updateAt   DateTime     @updatedAt
-}
-
-enum currencyType {
-  KIP
-  USD
-  THB
+  view       Int          @default(1)
+  category   Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  status     Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
 }
 
 model Status {
-  id       String    @id @default(uuid()) @db.VarChar(36)
-  isActive Boolean   @default(true)
-  name     String
-  createAt DateTime  @default(now())
-  updateAt DateTime  @updatedAt
-  Service  Service[]
-
+  id          String        @id @default(uuid()) @db.VarChar(36)
+  isActive    Boolean       @default(true)
+  name        String
+  createAt    DateTime      @default(now())
+  updateAt    DateTime      @updatedAt
   SaleService SaleService[]
+  Service     Service[]
 }
 
 model Category {
-  id       String    @id @default(uuid()) @db.VarChar(36)
-  isActive Boolean   @default(true)
-  title    String
-  icon     String
-  showHome Boolean   @default(false)
-  createAt DateTime  @default(now())
-  updateAt DateTime  @updatedAt
-  Service  Service[]
-
+  id          String        @id @default(uuid()) @db.VarChar(36)
+  isActive    Boolean       @default(true)
+  title       String
+  icon        String
+  createAt    DateTime      @default(now())
+  updateAt    DateTime      @updatedAt
+  showHome    Boolean       @default(false)
   SaleService SaleService[]
+  Service     Service[]
 }
 
 model Wallet {
@@ -237,10 +206,10 @@ model Wallet {
   userId      String    @db.VarChar(36)
   promotionId String    @db.VarChar(36)
   status      Boolean   @default(true)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
   createAt    DateTime  @default(now())
   updateAt    DateTime  @updatedAt
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -248,4 +217,27 @@ model Notification {
   isActive Boolean  @default(true)
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+}
+
+enum UserType {
+  user
+  admin
+  superadmin
+}
+
+enum StatusType {
+  reserved
+  approvedByAdmin
+  approvedByPoster
+  inProgress
+  bookerConfirm
+  posterConfirm
+  bookerReviewed
+  cancelled
+}
+
+enum currencyType {
+  KIP
+  USD
+  THB
 }

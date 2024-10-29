@@ -27,6 +27,7 @@ let select = {
   // categoryId: true,
   // statusId: true,
   // user:{}
+  isAllowBooking: true,
   name: true,
   village: true,
   district: true,
@@ -44,6 +45,7 @@ let select = {
   categoryId: true,
   user: {
     select: {
+      id: true,
       username: true,
       phoneNumber: true,
     },
