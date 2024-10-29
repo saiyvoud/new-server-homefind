@@ -199,6 +199,8 @@ const SaleServiceController = {
       return SendErrorCatch(res, `${EMessage.insertFailed} saleService`, err);
     }
   },
+
+  
   async Update(req, res) {
     try {
       const id = req.params.id;
