@@ -47,6 +47,7 @@ let select = {
   categoryId: true,
   user: {
     select: {
+      id:true,
       username: true,
       phoneNumber: true,
     },

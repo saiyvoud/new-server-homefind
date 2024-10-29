@@ -229,6 +229,7 @@ export const FindServiceById = (id) => {
       categoryId: true,
       user: {
         select: {
+          id:true,
           username: true,
           phoneNumber: true,
         },
