@@ -28,6 +28,7 @@ let select = {
   // categoryId: true,
   // statusId: true,
   // user:{}
+  isAllowBooking: true,
   name: true,
   village: true,
   district: true,
