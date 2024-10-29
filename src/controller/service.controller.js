@@ -1,3 +1,4 @@
+import { currencyType } from "@prisma/client";
 import client from "../Database/radis.js";
 import { EMessage } from "../service/enum.js";
 import {
@@ -38,7 +39,8 @@ let select = {
   isShare: true,
   images: true,
   view: true,
-  isShow:true,
+  isAllowBooking: true,
+  currency :true,
   coverImage: true,
   createAt: true,
   updateAt: true,
@@ -82,6 +84,8 @@ const ServiceController = {
         detail,
         isShare,
         statusId,
+        isAllowBooking,
+        currency,
       } = req.body;
       const data = req.files;
       if (!data || !data.images || !data.coverImage) {
@@ -109,7 +113,17 @@ const ServiceController = {
       if (typeof isShare !== "boolean") {
         isShare = isShare === "true";
       }
+      if (typeof isAllowBooking !== "boolean") {
+        isAllowBooking = isAllowBooking === "true";
+      }
 
+      if (currency && !Object.keys(currencyType).includes(currency)) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${Object.keys(currencyType).join(",")}`
+        );
+      }
       const [userExists, statsExists, categoryExists] = await Promise.all([
         FindUserById(posterId),
         FindStatusById(statusId),
@@ -165,6 +179,8 @@ const ServiceController = {
           statusId,
           images: images_url_list,
           coverImage: coverImage_url,
+          currency,
+          isAllowBooking,
         },
       });
       await client.del(
@@ -184,6 +200,13 @@ const ServiceController = {
       const id = req.params.id;
       const data = DataExist(req.body);
 
+      if (data.currency && !Object.keys(currencyType).includes(data.currency)) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${Object.keys(currencyType).join(",")}`
+        );
+      }
       // Check if the service exists
       const serviceExists = await FindServiceById(id);
       if (!serviceExists) {
@@ -263,8 +286,8 @@ const ServiceController = {
       if (data.isShare && typeof data.isShare !== "boolean") {
         data.isShare = data.isShare === "true" || data.isShare === "1";
       }
-      if (data.isShow && typeof data.isShow !== "boolean") {
-        data.isShow = data.isShow === "true" || data.isShow === "1";
+      if (data.isAllowBooking && typeof data.isAllowBooking !== "boolean") {
+        data.isAllowBooking = data.isAllowBooking === "true" || data.isAllowBooking === "1";
       }
 
       // Update the service
@@ -579,16 +602,16 @@ const ServiceController = {
 
   async SelectCategoryShowHome(req, res) {
     try {
-      const isShow = req.query.isShow === "true";
+      const isAllowBooking = req.query.isAllowBooking === "true";
       const service = await CacheAndRetrieveUpdatedData(
         cacheKey,
         model,
         where,
         select
       );
-      console.log("isShow :>> ", isShow);
+      console.log("isAllowBooking :>> ", isAllowBooking);
       const result = service.filter(
-        (i) => Boolean(i.category.showHome) === isShow
+        (i) => Boolean(i.category.showHome) === isAllowBooking
       );
 
       SendSuccess(res, `${EMessage.fetchAllSuccess} service`, result);
