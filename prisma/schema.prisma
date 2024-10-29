@@ -139,16 +139,19 @@ model Service {
   priceMonth      Float
   priceYear       Float
   priceCommission Float
-  detail          String
+  detail          String       @db.Text
+  isAllowBooking  Boolean     @default(false)
+  currency        currencyType
   view            Int          @default(1)
+  isShare         Boolean      @default(false)
   statusId        String       @db.VarChar(36)
   coverImage      String
   images          String[]
+  user            User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  category        Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  status          Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
   createAt        DateTime     @default(now())
   updateAt        DateTime     @updatedAt
-  isAllowBooking  Boolean      @default(false)
-  currency        currencyType
-  isShare         Boolean      @default(false)
   Order           Order[]
   category        Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   user            User         @relation(fields: [posterId], references: [id], onDelete: Cascade)

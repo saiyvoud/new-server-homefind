@@ -223,6 +223,8 @@ export const FindServiceById = (id) => {
       isShare: true,
       images: true,
       view: true,
+      isAllowBooking: true,
+      currency :true,
       coverImage: true,
       createAt: true,
       updateAt: true,

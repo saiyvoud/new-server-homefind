@@ -18,7 +18,7 @@ import {
   FindUserById,
 } from "../service/find.js";
 import { DeleteCachedKey } from "../service/cach.deletekey.js";
-// import { LIMITED_POST_SALES_SERVICES } from "../config/api.config.js";
+import { LIMITED_POST_SALES_SERVICES } from "../config/api.config.js";
 let cacheKey = "saleService";
 let where = { isActive: true };
 const model = "saleService";
@@ -95,7 +95,7 @@ const SaleServiceController = {
         { posterId: posterId, isActive: true },
         select
       );
-      if (userCount.length > 10 && role === "user") {
+      if (userCount.length > LIMITED_POST_SALES_SERVICES&& role === "user") {
         return SendError(
           res,
           400,
@@ -199,6 +199,8 @@ const SaleServiceController = {
       return SendErrorCatch(res, `${EMessage.insertFailed} saleService`, err);
     }
   },
+
+  
   async Update(req, res) {
     try {
       const id = req.params.id;
