@@ -165,7 +165,7 @@ model Service {
   priceYear       Float
   priceCommission Float
   detail          String       @db.Text
-  isAllowBooking  Boolean
+  isAllowBooking  Boolean     @default(false)
   currency        currencyType
   view            Int          @default(1)
   isShare         Boolean      @default(false)

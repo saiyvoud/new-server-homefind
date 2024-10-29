@@ -118,7 +118,7 @@ export const ValidateService = (data) => {
     priceCommission,
     detail,
     isShare,
-    isAllowBooking,
+    // isAllowBooking,
     currency,
     statusId,
   } = data;
@@ -135,7 +135,7 @@ export const ValidateService = (data) => {
     detail,
     isShare,
     statusId,
-    isAllowBooking,
+    // isAllowBooking,
     currency,
   });
 };

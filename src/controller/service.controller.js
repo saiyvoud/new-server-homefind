@@ -84,7 +84,7 @@ const ServiceController = {
         detail,
         isShare,
         statusId,
-        isAllowBooking,
+        // isAllowBooking,
         currency,
       } = req.body;
       const data = req.files;
@@ -113,9 +113,9 @@ const ServiceController = {
       if (typeof isShare !== "boolean") {
         isShare = isShare === "true";
       }
-      if (typeof isAllowBooking !== "boolean") {
-        isAllowBooking = isAllowBooking === "true";
-      }
+      // if (typeof isAllowBooking !== "boolean") {
+      //   isAllowBooking = isAllowBooking === "true";
+      // }
 
       if (currency && !Object.keys(currencyType).includes(currency)) {
         return SendError(
@@ -180,7 +180,7 @@ const ServiceController = {
           images: images_url_list,
           coverImage: coverImage_url,
           currency,
-          isAllowBooking,
+          // isAllowBooking,
         },
       });
       await client.del(
