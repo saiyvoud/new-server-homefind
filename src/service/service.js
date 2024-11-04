@@ -109,13 +109,13 @@ export const CacheAndRetrieveUpdatedData = async (
     const cachedData = await client.get(cacheKey);
     let data;
     if (!cachedData) {
-    // console.log("pomostion");
-    // console.log(
-    //   `Cache Key: ${cacheKey}, Model: ${model}, Where: ${JSON.stringify(
-    //     where
-    //   )}, Select: ${JSON.stringify(select)}`
-    // );
-    // if (true) {
+      // console.log("pomostion");
+      // console.log(
+      //   `Cache Key: ${cacheKey}, Model: ${model}, Where: ${JSON.stringify(
+      //     where
+      //   )}, Select: ${JSON.stringify(select)}`
+      // );
+      // if (true) {
       data = await prisma[model].findMany({
         where,
         select,
@@ -123,9 +123,7 @@ export const CacheAndRetrieveUpdatedData = async (
       });
 
       await client.set(cacheKey, JSON.stringify(data), "EX", 3600);
-
     } else {
-
       data = JSON.parse(cachedData);
 
       // console.log('data :>> ', data);
@@ -213,7 +211,7 @@ export const VerifyToken = (token) => {
       }
 
       try {
-        const id = await Decrypt(decoded.id);
+        const id = decoded.id;
 
         if (!id) {
           console.error("Decryption Error: Decrypted ID is empty or invalid");

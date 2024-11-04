@@ -31,6 +31,7 @@ import { generateJWTtoken } from "../config/GenerateToken.js";
 import { KLimit, SECRET_KEY } from "../config/api.config.js";
 import CryptoJS from "crypto-js";
 import { S3UploadImage } from "../service/s3UploadImage.js";
+import { authfirebase } from "../config/firebaseConfig.js";
 let cacheKey = "users";
 const model = "user";
 let where = {
@@ -693,6 +694,17 @@ export const UserControlller = {
       console.error("Error updating image:", error);
       return SendErrorCatch(res, `${EMessage.updateFailed} image`, error);
     }
+  },
+
+  async SendOTP(req, res) {
+    // try {
+    //   const { phoneNumber } = req.body;
+
+    //   const a=await authfirebase().sign
+
+    // } catch (error) {
+    //   return SendErrorCatch(res, `send OTP`, error);
+    // }
   },
 };
 
