@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
-import bcryptjs from "bcryptjs";
 import { JWT_REFRECH_TIMEOUT, JWT_TIMEOUT, SECRET_KEY } from "./api.config.js";
-import { Endcrypt } from "../service/service.js";
 
 export const generateJWTtoken = async (data) => {
   try {
@@ -10,7 +8,7 @@ export const generateJWTtoken = async (data) => {
       loginversion: data.loginversion,
     };
 
-    const encryptId = await Endcrypt(payload.id);
+    const encryptId = data.id;
     const jwtData = {
       expiresIn: String(JWT_TIMEOUT),
     };
@@ -24,12 +22,13 @@ export const generateJWTtoken = async (data) => {
     };
     const token = jwt.sign(payload, SECRET_KEY, jwtData);
     const refreshToken = jwt.sign(payloodRefresh, SECRET_KEY, jwtRefreshData);
-    const expiresIn=jwt.verify(token,SECRET_KEY)
+    const expiresIn = jwt.verify(token, SECRET_KEY);
     const resultData = {
       token: token,
       refreshToken: refreshToken,
-      expiresIn:expiresIn.exp
+      expiresIn: expiresIn.exp,
     };
+    console.log('resultData :>> ', expiresIn);
     return resultData;
   } catch (error) {
     console.log("error generate token :>> ", error);

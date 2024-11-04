@@ -103,7 +103,7 @@ export const UserControlller = {
       });
 
       // Generate JWT token
-      const encrypId = await Endcrypt(user.id);
+      const encrypId = id;
       const dataJWT = {
         id: encrypId,
         loginversion: user.loginversion,
@@ -210,7 +210,7 @@ export const UserControlller = {
         },
       });
 
-      const encrypId = await Endcrypt(user.id);
+      const encrypId = user.id;
       const dataJWT = {
         id: encrypId,
         loginversion: user.loginversion,
@@ -269,7 +269,7 @@ export const UserControlller = {
         },
       });
 
-      const encrypId = await Endcrypt(user.id);
+      const encrypId = user.id;
       const dataJWT = {
         id: encrypId,
         loginversion: user.loginversion,
@@ -329,7 +329,7 @@ export const UserControlller = {
         },
       });
 
-      const encrypId = await Endcrypt(user.id);
+      const encrypId = user.id;
       const dataJWT = {
         id: encrypId,
         loginversion: user.loginversion,

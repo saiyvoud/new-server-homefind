@@ -1,12 +1,9 @@
-import jwt from "jsonwebtoken";
 import {
-  CacheAndInsertData,
   CacheAndRetrieveUpdatedData,
   SendError,
   VerifyToken,
 } from "../service/service.js";
 import { EMessage } from "../service/enum.js";
-import prisma from "../util/prismaClient.js";
 
 export const auth = async (req, res, next) => {
   try {
@@ -19,7 +16,7 @@ export const auth = async (req, res, next) => {
 
     req.user = decode.id;
     req.role = decode.role;
-   
+
     next();
   } catch (err) {
     if (err.message == "Token has expired") {
