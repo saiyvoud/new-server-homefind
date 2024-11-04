@@ -27,6 +27,8 @@ model User {
   SaleService  SaleService[]
   Service      Service[]
   Wallet       Wallet[]
+
+  OtherService OtherService[]
 }
 
 model Kyc {
@@ -114,8 +116,6 @@ model Payment {
   Order       Order[]
 }
 
-
-
 model Review {
   id       String   @id @default(uuid()) @db.VarChar(36)
   isActive Boolean  @default(true)
@@ -130,54 +130,90 @@ model Review {
 }
 
 model Service {
-  id              String       @id @default(uuid()) @db.VarChar(36)
-  isActive        Boolean      @default(true)
-  posterId        String       @db.VarChar(36)
-  categoryId      String       @db.VarChar(36)
-  name            String
-  village         String
-  district        String
-  province        String
-  priceMonth      Float
-  priceYear       Float
-  priceCommission Float
-  detail          String       @db.Text
-  isAllowBooking  Boolean      @default(false)
-  currency        currencyType
-  view            Int          @default(1)
-  isShare         Boolean      @default(false)
-  statusId        String       @db.VarChar(36)
-  coverImage      String
-  images          String[]
-  user            User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
-  category        Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  status          Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
-  createAt        DateTime     @default(now())
-  updateAt        DateTime     @updatedAt
-  Order           Order[]
+  id                 String       @id @default(uuid()) @db.VarChar(36)
+  isActive           Boolean      @default(true)
+  posterId           String       @db.VarChar(36)
+  categoryId         String       @db.VarChar(36)
+  name               String
+  village            String
+  district           String
+  province           String
+  priceMonth         Float
+  priceYear          Float
+  priceCommission    Float
+  detail             String       @db.Text
+  isAllowBooking     Boolean      @default(false)
+  currency           currencyType
+  currencyCommission currencyType @default(KIP)
+  view               Int          @default(1)
+  isShare            Boolean      @default(false)
+  statusId           String       @db.VarChar(36)
+  coverImage         String
+  images             String[]
+  user               User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  category           Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  status             Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  createAt           DateTime     @default(now())
+  updateAt           DateTime     @updatedAt
+  Order              Order[]
 }
 
 model SaleService {
-  id         String       @id @default(uuid()) @db.VarChar(36)
-  isActive   Boolean      @default(true)
-  posterId   String       @db.VarChar(36)
-  categoryId String       @db.VarChar(36)
-  name       String
-  village    String
-  district   String
-  province   String
-  price      Float
-  currency   currencyType
-  detail     String
-  coverImage String
-  images     String[]
-  statusId   String       @db.VarChar(36)
-  createAt   DateTime     @default(now())
-  updateAt   DateTime     @updatedAt
-  view       Int          @default(1)
-  category   Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  user       User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
-  status     Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  id          String       @id @default(uuid()) @db.VarChar(36)
+  isActive    Boolean      @default(true)
+  posterId    String       @db.VarChar(36)
+  categoryId  String       @db.VarChar(36)
+  name        String
+  village     String
+  district    String
+  province    String
+  price       Float
+  currency    currencyType
+  detail      String       @db.Text
+  coverImage  String
+  phoneNumber String?
+  images      String[]
+  statusId    String       @db.VarChar(36)
+  createAt    DateTime     @default(now())
+  updateAt    DateTime     @updatedAt
+  view        Int          @default(1)
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  status      Status       @relation(fields: [statusId], references: [id], onDelete: Cascade)
+}
+
+model OtherService {
+  id                  String                @id @default(uuid()) @db.VarChar(36)
+  isActive            Boolean               @default(true)
+  posterId            String                @db.VarChar(36)
+  categoryId          String                @db.VarChar(36)
+  name                String
+  village             String
+  district            String
+  province            String
+  detail              String                @db.Text()
+  phoneNumber         String
+  coverImage          String
+  images              String[]
+  createAt            DateTime              @default(now())
+  updateAt            DateTime              @updatedAt
+  view                Int                   @default(1)
+  category            Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user                User                  @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  ProductOtherService ProductOtherService[]
+}
+
+model ProductOtherService {
+  id           String       @id @default(uuid()) @db.VarChar(36)
+  isActive     Boolean      @default(true)
+  otherId      String       @db.VarChar(36)
+  name         String
+  price        Float
+  details      String       @db.Text
+  coverImage   String
+  createAt     DateTime     @default(now())
+  updateAt     DateTime     @updatedAt
+  otherService OtherService @relation(fields: [otherId], references: [id], onDelete: Cascade)
 }
 
 model Status {
@@ -191,15 +227,16 @@ model Status {
 }
 
 model Category {
-  id          String        @id @default(uuid()) @db.VarChar(36)
-  isActive    Boolean       @default(true)
-  title       String
-  icon        String
-  createAt    DateTime      @default(now())
-  updateAt    DateTime      @updatedAt
-  showHome    Boolean       @default(false)
-  SaleService SaleService[]
-  Service     Service[]
+  id           String         @id @default(uuid()) @db.VarChar(36)
+  isActive     Boolean        @default(true)
+  title        String
+  icon         String
+  createAt     DateTime       @default(now())
+  updateAt     DateTime       @updatedAt
+  showHome     Boolean        @default(false)
+  SaleService  SaleService[]
+  Service      Service[]
+  OtherService OtherService[]
 }
 
 model Wallet {

@@ -74,21 +74,15 @@ const checkDatabaseConnection = async () => {
   }
 };
 
+
 // Delete all keys from Redis
 await client.flushAll();
 console.log("All Redis cache cleared");
 
-// const user = await client.get("categorys");
-// console.log('categorys :>> ', user);
-// Start Server
 
 setupSocket(io);
 
-// app.listen(SERVER_PORT, async () => {
-//   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);
-//   console.log(`Server Already: ${SERVER_PORT}`);
-//   checkDatabaseConnection();
-// });
+
 
 httpServer.listen(SERVER_PORT, async () => {
   console.log(`Server is listening on http://localhost:${SERVER_PORT}`);

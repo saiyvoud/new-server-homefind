@@ -208,9 +208,6 @@ export const FindServiceById = (id) => {
     {
       id: true,
       posterId: true,
-      // categoryId: true,
-      // statusId: true,
-      // user:{}
       isAllowBooking: true,
       name: true,
       village: true,
@@ -224,14 +221,15 @@ export const FindServiceById = (id) => {
       images: true,
       view: true,
       isAllowBooking: true,
-      currency :true,
+      currency: true,
+      currencyCommission: true,
       coverImage: true,
       createAt: true,
       updateAt: true,
       categoryId: true,
       user: {
         select: {
-          id:true,
+          id: true,
           username: true,
           phoneNumber: true,
         },
@@ -265,6 +263,7 @@ export const FindSaleServiceById = (id) => {
       images: true,
       view: true,
       coverImage: true,
+      phoneNumber: true,
       createAt: true,
       updateAt: true,
       categoryId: true,
@@ -282,6 +281,54 @@ export const FindSaleServiceById = (id) => {
           name: true,
         },
       },
+    }
+  );
+};
+
+export const FindotherServiceById = (id) => {
+  return findIdInCached(
+    "otherService",
+    "otherService",
+    { id, isActive: true },
+    {
+      id: true,
+      posterId: true,
+      name: true,
+      village: true,
+      district: true,
+      province: true,
+      detail: true,
+      phoneNumber: true,
+      view: true,
+      coverImage: true,
+      images: true,
+      createAt: true,
+      updateAt: true,
+      categoryId: true,
+      user: {
+        select: {
+          username: true,
+          phoneNumber: true,
+        },
+      },
+    }
+  );
+};
+
+export const FindproductOtherServiceById = (id) => {
+  return findIdInCached(
+    "productOtherService",
+    "productOtherService",
+    { id, isActive: true },
+    {
+      id: true,
+      otherId: true,
+      name: true,
+      price: true,
+      details: true,
+      coverImage: true,
+      createAt: true,
+      updateAt: true,
     }
   );
 };

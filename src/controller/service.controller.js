@@ -25,9 +25,6 @@ const model = "service";
 let select = {
   id: true,
   posterId: true,
-  // categoryId: true,
-  // statusId: true,
-  // user:{}
   isAllowBooking: true,
   name: true,
   village: true,
@@ -41,14 +38,15 @@ let select = {
   images: true,
   view: true,
   isAllowBooking: true,
-  currency :true,
+  currency: true,
+  currencyCommission: true,
   coverImage: true,
   createAt: true,
   updateAt: true,
   categoryId: true,
   user: {
     select: {
-      id:true,
+      id: true,
       username: true,
       phoneNumber: true,
     },
@@ -88,6 +86,7 @@ const ServiceController = {
         statusId,
         // isAllowBooking,
         currency,
+        currencyCommission,
       } = req.body;
       const data = req.files;
       if (!data || !data.images || !data.coverImage) {
@@ -120,6 +119,16 @@ const ServiceController = {
       // }
 
       if (currency && !Object.keys(currencyType).includes(currency)) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${Object.keys(currencyType).join(",")}`
+        );
+      }
+      if (
+        currencyCommission &&
+        !Object.keys(currencyType).includes(currencyCommission)
+      ) {
         return SendError(
           res,
           400,
@@ -182,6 +191,7 @@ const ServiceController = {
           images: images_url_list,
           coverImage: coverImage_url,
           currency,
+          currencyCommission,
           // isAllowBooking,
         },
       });
@@ -203,6 +213,16 @@ const ServiceController = {
       const data = DataExist(req.body);
 
       if (data.currency && !Object.keys(currencyType).includes(data.currency)) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${Object.keys(currencyType).join(",")}`
+        );
+      }
+      if (
+        data.currencyCommission &&
+        !Object.keys(currencyType).includes(data.currencyCommission)
+      ) {
         return SendError(
           res,
           400,
@@ -289,7 +309,8 @@ const ServiceController = {
         data.isShare = data.isShare === "true" || data.isShare === "1";
       }
       if (data.isAllowBooking && typeof data.isAllowBooking !== "boolean") {
-        data.isAllowBooking = data.isAllowBooking === "true" || data.isAllowBooking === "1";
+        data.isAllowBooking =
+          data.isAllowBooking === "true" || data.isAllowBooking === "1";
       }
 
       // Update the service

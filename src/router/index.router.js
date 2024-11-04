@@ -11,7 +11,9 @@ import PaymentController from "../controller/payment.controller.js";
 import ReviewController from "../controller/review.controller.js";
 import ServiceController from "../controller/service.controller.js";
 import WalletController from "../controller/wallet.controller.js";
-import SaleServiceController from "../controller/service_sale.controller.js";
+import SaleServiceController from "../controller/sale_service.controller.js";
+import OtherServiceController from "../controller/other_service.controller.js";
+import productOtherServiceController from "../controller/product_other_service.js";
 const route = express.Router();
 //-----------------------banner------------------------------
 
@@ -219,7 +221,7 @@ route.get(
 //search by v d p --
 // search between  price --
 
-//-----------------------service------------------------------
+//-----------------------saleservice------------------------------
 const saleService = `/saleService`;
 
 route.get(`${saleService}/selAll`, SaleServiceController.SelectAll);
@@ -260,11 +262,105 @@ route.get(
 );
 
 route.get(`${saleService}/search`, auth, SaleServiceController.Search);
-route.get(`${saleService}/selRecommend`, auth, SaleServiceController.SelectRecommend);
+route.get(
+  `${saleService}/selRecommend`,
+  auth,
+  SaleServiceController.SelectRecommend
+);
 route.get(
   `${saleService}/searchAddress`,
   auth,
   SaleServiceController.SearchAddress
+);
+
+//-----------------------otherservice------------------------------
+const otherService = `/otherService`;
+
+route.get(`${otherService}/selAll`, OtherServiceController.SelectAll);
+route.get(`${otherService}/selOne/:id`, OtherServiceController.SelectOne);
+route.get(
+  `${otherService}/selByUserId/:userId`,
+  auth,
+  OtherServiceController.SelectByUserId
+);
+
+route.post(`${otherService}/insert`, auth, OtherServiceController.Insert);
+
+route.put(`${otherService}/update/:id`, auth, OtherServiceController.Update);
+
+route.put(
+  `${otherService}/updateCoverImage/:id`,
+  auth,
+  OtherServiceController.UpdateCoverImage
+);
+route.put(
+  `${otherService}/updateImages/:id`,
+  auth,
+  OtherServiceController.UpdateImages
+);
+route.put(`${otherService}/updateView/:id`, OtherServiceController.UpdateView);
+
+route.delete(`${otherService}/delete/:id`, auth, OtherServiceController.Delete);
+
+route.get(
+  `${otherService}/selByCategoryId/:categoryId`,
+  auth,
+  OtherServiceController.SelectByCategoryId
+);
+
+route.get(`${otherService}/search`, auth, OtherServiceController.Search);
+route.get(
+  `${otherService}/selRecommend`,
+  auth,
+  OtherServiceController.SelectRecommend
+);
+route.get(
+  `${otherService}/searchAddress`,
+  auth,
+  OtherServiceController.SearchAddress
+);
+
+//-----------Product Otherservice------------
+
+const productOtherService = `/productOtherService`;
+
+route.get(
+  `${productOtherService}/selAll`,
+  productOtherServiceController.SelectAll
+);
+route.get(
+  `${productOtherService}/selOne/:id`,
+  productOtherServiceController.SelectOne
+);
+
+route.post(
+  `${productOtherService}/insert`,
+  auth,
+  productOtherServiceController.Insert
+);
+
+route.put(
+  `${productOtherService}/update/:id`,
+  auth,
+  productOtherServiceController.Update
+);
+
+route.put(
+  `${productOtherService}/updateCoverImage/:id`,
+  auth,
+  productOtherServiceController.UpdateCoverImage
+);
+
+route.delete(
+  `${productOtherService}/delete/:id`,
+  auth,
+  productOtherServiceController.Delete
+);
+
+route.get(
+  `${productOtherService}/selByOtherService/:otherId`,
+  auth,
+  productOtherServiceController.SelectByOtherServiceId
 );
 
 //-----------------------status------------------------------

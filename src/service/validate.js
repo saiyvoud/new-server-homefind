@@ -120,6 +120,7 @@ export const ValidateService = (data) => {
     isShare,
     // isAllowBooking,
     currency,
+    currencyCommission,
     statusId,
   } = data;
   return validateData({
@@ -135,6 +136,7 @@ export const ValidateService = (data) => {
     detail,
     isShare,
     statusId,
+    currencyCommission,
     // isAllowBooking,
     currency,
   });
