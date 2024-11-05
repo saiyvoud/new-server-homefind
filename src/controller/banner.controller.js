@@ -25,6 +25,7 @@ const BannerController = {
       const data = req.files;
 
       console.log("body :>> ", req.body);
+      
 
       if (validate.length > 0) {
         return SendError(
