@@ -31,7 +31,7 @@ import { generateJWTtoken } from "../config/GenerateToken.js";
 import { KLimit, SECRET_KEY } from "../config/api.config.js";
 import CryptoJS from "crypto-js";
 import { S3UploadImage } from "../service/s3UploadImage.js";
-import { authfirebase } from "../config/firebaseConfig.js";
+
 let cacheKey = "users";
 const model = "user";
 let where = {
@@ -104,7 +104,7 @@ export const UserControlller = {
       });
 
       // Generate JWT token
-      const encrypId = id;
+      const encrypId =user.id;
       const dataJWT = {
         id: encrypId,
         loginversion: user.loginversion,
@@ -697,14 +697,16 @@ export const UserControlller = {
   },
 
   async SendOTP(req, res) {
-    // try {
-    //   const { phoneNumber } = req.body;
+    try {
+      const { phoneNumber } = req.body;
 
-    //   const a=await authfirebase().sign
-
-    // } catch (error) {
-    //   return SendErrorCatch(res, `send OTP`, error);
-    // }
+      return SendSuccess(
+        res,
+        "Initiate phone OTP verification on the client side."
+      );
+    } catch (error) {
+      return SendErrorCatch(res, `send OTP`, error);
+    }
   },
 };
 

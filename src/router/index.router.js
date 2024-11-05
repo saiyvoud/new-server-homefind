@@ -396,6 +396,8 @@ route.put(`${user}/changePassword/:id`, auth, userController.ChangePassword);
 
 route.delete(`${user}/delete/:id`, auth, userController.Delete);
 
+route.post(`${user}/SendOTP`, userController.SendOTP);
+
 //-----------------------wallet------------------------------
 
 const wallet = `/wallet`;

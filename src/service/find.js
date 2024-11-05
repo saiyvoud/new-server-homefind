@@ -55,7 +55,7 @@ const findIdInCached = async (cacheKey, model, where, select) => {
 export const ExistingUser = ({ phoneNumber }) => {
   return findFirst("user", {
     isActive: true,
-    OR: [{ phoneNumber }],
+    phoneNumber,
   });
 };
 export const FindUserByIdShowPassword = (id) => {
