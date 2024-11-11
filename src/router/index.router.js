@@ -359,7 +359,6 @@ route.delete(
 
 route.get(
   `${productOtherService}/selByOtherService/:otherId`,
-  auth,
   productOtherServiceController.SelectByOtherServiceId
 );
 

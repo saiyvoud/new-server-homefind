@@ -305,6 +305,13 @@ export const FindotherServiceById = (id) => {
       createAt: true,
       updateAt: true,
       categoryId: true,
+      category: {
+        select: {
+          id: true,
+          icon: true,
+          title: true,
+        },
+      },
       user: {
         select: {
           username: true,

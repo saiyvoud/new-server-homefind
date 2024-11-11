@@ -92,6 +92,7 @@ const SaleServiceController = {
         statusId,
       });
       const role = req.role;
+      
       const userCount = await CacheAndRetrieveUpdatedData(
         posterId + cacheKey,
         model,

@@ -34,6 +34,13 @@ let select = {
   createAt: true,
   updateAt: true,
   categoryId: true,
+  category: {
+    select: {
+      id: true,
+      icon: true,
+      title: true,
+    },
+  },
   user: {
     select: {
       username: true,
@@ -52,6 +59,8 @@ const ReFreshCashData = async ({ key, keyCt, keyUser }) => {
 
 const OtherServiceController = {
   async Insert(req, res) {
+
+    console.log("body :>> ", req.body);
     try {
       let {
         name,
