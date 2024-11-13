@@ -22,7 +22,7 @@ const CategoryController = {
   async Insert(req, res) {
     try {
       const validate = ValidateCategory(req.body);
-      let { title, showHome } = req.body;
+      let { title, showHome, index } = req.body;
       const data = req.files;
 
       if (validate.length > 0) {
@@ -43,6 +43,7 @@ const CategoryController = {
         data: {
           title,
           showHome,
+          index: parseInt(index),
           icon: img_url,
         },
       });
@@ -64,6 +65,7 @@ const CategoryController = {
             : data.showHome === "true";
       if (!categoryExists)
         return SendError(res, 404, `${EMessage.notFound} category by id ${id}`);
+      data.index = parseInt(data.index);
       const category = await prisma.category.update({
         where: {
           id,

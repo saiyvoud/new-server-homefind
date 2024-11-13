@@ -233,6 +233,7 @@ model Category {
   createAt     DateTime       @default(now())
   updateAt     DateTime       @updatedAt
   showHome     Boolean        @default(false)
+  index        Int?
   OtherService OtherService[]
   SaleService  SaleService[]
   Service      Service[]

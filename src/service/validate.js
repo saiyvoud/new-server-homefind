@@ -66,8 +66,8 @@ export const ValidatePromotion = (data) => {
 };
 
 export const ValidateCategory = (data) => {
-  const { title, showHome } = data;
-  return validateData({ title, showHome });
+  const { title, showHome, index } = data;
+  return validateData({ title, showHome, index });
 };
 
 export const ValidateKYC = (data) => {
