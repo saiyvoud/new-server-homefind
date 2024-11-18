@@ -34,6 +34,7 @@ let select = {
   images: true,
   phoneNumber: true,
   view: true,
+  currency: true,
   coverImage: true,
   createAt: true,
   updateAt: true,

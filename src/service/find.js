@@ -262,6 +262,7 @@ export const FindSaleServiceById = (id) => {
       detail: true,
       images: true,
       view: true,
+      currency: true,
       coverImage: true,
       phoneNumber: true,
       createAt: true,
