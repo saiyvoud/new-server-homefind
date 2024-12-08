@@ -58,6 +58,14 @@ export const ExistingUser = ({ phoneNumber }) => {
     phoneNumber,
   });
 };
+
+export const ExistingUsername = ({ username }) => {
+  return findFirst("user", {
+    isActive: true,
+    username,
+  });
+};
+
 export const FindUserByIdShowPassword = (id) => {
   return findOne("user", { id, isActive: true });
 };

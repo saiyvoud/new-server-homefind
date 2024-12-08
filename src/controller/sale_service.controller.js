@@ -296,6 +296,7 @@ const SaleServiceController = {
       await CacheAndRetrieveUpdatedData(cacheKey, model, where, select);
       SendSuccess(res, `${EMessage.updateSuccess} service`, saleservice);
     } catch (error) {
+      console.log("error :>> ", error);
       return SendErrorCatch(res, `${EMessage.updateFailed} saleService`, error);
     }
   },

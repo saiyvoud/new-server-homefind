@@ -377,6 +377,7 @@ route.delete(`${status}/delete/:id`, auth, admin, StatusController.Delete);
 const user = `/user`;
 
 route.get(`${user}/selAll`, auth, admin, userController.SelectAll);
+route.post(`${user}/insert`, auth, admin, userController.Insert);
 route.get(`${user}/selOne/:id`, userController.SelectOne);
 route.get(`${user}/selAllPage`, userController.SelecAllPage);
 route.post(`${user}/refreshToken`, userController.RefreshToken);

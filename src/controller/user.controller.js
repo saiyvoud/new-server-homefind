@@ -1,6 +1,7 @@
 import { EMessage } from "../service/enum.js";
 import {
   ExistingUser,
+  ExistingUsername,
   FindUserById,
   FindUserByIdShowPassword,
   FindUserByPhoneNumber,
@@ -99,6 +100,77 @@ export const UserControlller = {
           // email,
           password: hashPassword,
           phoneNumber,
+        },
+        select,
+      });
+
+      // Generate JWT token
+      const encrypId =user.id;
+      const dataJWT = {
+        id: encrypId,
+        loginversion: user.loginversion,
+      };
+      const token = await generateJWTtoken(dataJWT);
+      const result = { ...user, token };
+
+      await CacheAndInsertData(cacheKey, model, where, user);
+
+      // Send response
+      return SendCreate(res, `${EMessage.registrationSuccess}`, result);
+    } catch (err) {
+      SendErrorCatch(res, `${EMessage.registrationFailed}`, err);
+    }
+  },
+
+  async Insert(req, res) {
+    try {
+      // Validate user input
+      const validate = ValidateUser(req.body);
+      if (validate.length > 0) {
+        return SendError(
+          res,
+          400,
+          `${EMessage.pleaseInput}: ${validate.join(", ")}`
+        );
+      }
+
+      // Check for existing user
+      const existingUser = await ExistingUser(req.body);
+      const { username, password, phoneNumber, email, role } = req.body;
+
+      if (existingUser) {
+        if (existingUser.username === username) {
+          return SendError(
+            res,
+            400,
+            `${EMessage.userAlreadyExists} with username :${username}`
+          );
+        }
+        if (existingUser.phoneNumber === phoneNumber) {
+          return SendError(
+            res,
+            400,
+            `${EMessage.userAlreadyExists} with phoneNumber :${phoneNumber}`
+          );
+        }
+        if (existingUser.email === email) {
+          return SendError(
+            res,
+            400,
+            `${EMessage.userAlreadyExists} with email :${email}`
+          );
+        }
+      }
+
+      // Encrypt password and create user
+      const hashPassword = await Endcrypt(password);
+      const user = await prisma.user.create({
+        data: {
+          username,
+          email,
+          password: hashPassword,
+          phoneNumber,
+          role,
         },
         select,
       });
@@ -453,27 +525,21 @@ export const UserControlller = {
       }
 
       const existingUser = await ExistingUser(req.body);
+      const existingUsername = await ExistingUsername(req.body);
 
-      if (existingUser) {
-        if (existingUser.username === data.username) {
+      if (existingUser || existingUsername) {
+        if (existingUsername?.username === data.username && existingUsername?.id !== id) {
           return SendError(
             res,
             404,
-            `${EMessage.userAlreadyExists} with username :${data.username}`
+            `${EMessage.userAlreadyExists} with username :${data?.username}`
           );
         }
-        if (existingUser.phoneNumber === data.phoneNumber) {
+        if (existingUser?.phoneNumber === data.phoneNumber && existingUser?.id !== id) {
           return SendError(
             res,
             404,
             `${EMessage.userAlreadyExists} with phoneNumber :${data.phoneNumber}`
-          );
-        }
-        if (existingUser.email === data.email) {
-          return SendError(
-            res,
-            404,
-            `${EMessage.userAlreadyExists} with email :${data.email}`
           );
         }
       }
