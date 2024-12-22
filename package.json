@@ -1,4 +1,7 @@
 {
+    "engines": {
+    "node": "20.x"
+  },
   "name": "home_find",
   "version": "1.0.0",
   "description": "",
